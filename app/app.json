@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "danram",
+    "slug": "danram",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "danram"
+}
