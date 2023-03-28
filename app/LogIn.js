@@ -5,8 +5,7 @@ import {
   GoogleSignin,
   GoogleSigninButton,
 } from "@react-native-google-signin/google-signin";
-import auth from "@react-native-firebase/auth";
-
+import { iosClient, webClient } from "./Api";
 const Container = styled.View`
   flex: 1;
   background-color: #fff;
@@ -16,20 +15,23 @@ const Container = styled.View`
 
 const onGoogleButtonPress = async () => {
   await GoogleSignin.hasPlayServices();
-  const { idToken } = await GoogleSignin.signIn();
-  console.log(idToken);
-  const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-  return auth().signInWithCredential(googleCredential);
+  const { serverAuthCode } = await GoogleSignin.signIn();
+  console.log(serverAuthCode);
+
+  await fetch("http://server-ip/auth/google/token", {
+    method: "POST",
+    body: serverAuthCode,
+  });
 };
 
 const MainText = styled.Text``;
 
 const googleSigninConfigure = () => {
   GoogleSignin.configure({
-    webClientId: "web-client-id",
-    iosClientId: "ios-client-id",
+    webClientId: webClient,
+    iosClientId: iosClient,
     offlineAccess: true,
-    forceCodeForRefreshToken: true,
+    scopes: ["profile"],
   });
 };
 
