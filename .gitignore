@@ -272,7 +272,7 @@ google-services.json
 # Ignore the ios and android directories in React Native projects
 # ios/
 # android/
-
+app/ios/danram/GoogleService-Info.plist
 
 #*.lock
 
