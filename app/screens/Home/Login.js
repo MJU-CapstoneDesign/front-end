@@ -5,7 +5,6 @@ import {
   GoogleSignin,
   GoogleSigninButton,
 } from "@react-native-google-signin/google-signin";
-import { iosClient, webClient } from "./Api";
 const Container = styled.View`
   flex: 1;
   background-color: #fff;
@@ -31,8 +30,10 @@ const MainText = styled.Text``;
 
 const googleSigninConfigure = () => {
   GoogleSignin.configure({
-    webClientId: webClient,
-    iosClientId: iosClient,
+    webClientId:
+      "847692404644-r5vm3f0m515r5f84h8au9tm804544due.apps.googleusercontent.com",
+    iosClientId:
+      "847692404644-hms7b07e79r46p93pvta3q5jh5ru7d8o.apps.googleusercontent.com",
     offlineAccess: true,
     scopes: ["profile"],
   });
