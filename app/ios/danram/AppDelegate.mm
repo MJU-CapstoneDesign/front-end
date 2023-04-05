@@ -3,10 +3,14 @@
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
 
+#import <FirebaseCore/FirebaseCore.h> // FirebaseCore 헤더 추가
+#import <GoogleSignIn/GoogleSignIn.h>
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  [FIRApp configure];
   self.moduleName = @"main";
 
   // You can add your custom initial props in the dictionary below.
