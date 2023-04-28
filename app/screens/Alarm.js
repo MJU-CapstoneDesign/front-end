@@ -2,12 +2,13 @@
 // Import necessary libraries
 import React from 'react';
 import styled from 'styled-components/native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Container = styled.View`
     flex: 1;
     justify-content: center;
     align-items: center;
-    background-color: '#F2DFDF';
+    background-color: 'rgb(242, 223, 223)';
 `;
 
 const getDay = function(day) {
@@ -29,7 +30,19 @@ const getDay = function(day) {
 	}
 };
 
-const MainText = styled.Text``;
+const SubText = styled.Text`
+`;
+
+const MainText = styled.Text`
+	font-size: 80px;
+	font-weight: bold;
+	color: 'rgb(104, 38, 38)';
+`;
+
+const AlarmOffContainer = styled.TouchableOpacity`
+	margin-top: 155px;
+	margin-bottom: -125px;
+`;
 
 export default function Alarm() {
 	let today = new Date();   
@@ -41,7 +54,11 @@ export default function Alarm() {
 
 	return (
 		<Container>
-			<MainText>{year}/{month}/{date} {getDay(day)}</MainText>
+			<SubText>{year}/{month}/{date} {getDay(day)}</SubText>
+			<MainText>07:00</MainText>
+			<AlarmOffContainer onPress={() => console.log('touched')}>
+				<MaterialIcons name="cancel" size={114} color="rgb(228, 111, 111)" />
+			</AlarmOffContainer>
 		</Container>
 	);
 }
