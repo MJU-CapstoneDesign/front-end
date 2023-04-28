@@ -1,6 +1,5 @@
-import { StatusBar } from "expo-status-bar";
-import React from "react";
-import styled from "styled-components/native";
+import React from 'react';
+import styled from 'styled-components/native';
 
 const Container = styled.View`
   flex: 1;
@@ -12,9 +11,9 @@ const Container = styled.View`
 const MainText = styled.Text``;
 
 export default function MyMeeting() {
-  return (
-    <Container>
-      <MainText>MyMeeting</MainText>
-    </Container>
-  );
+	return (
+		<Container>
+			<MainText>MyMeeting</MainText>
+		</Container>
+	);
 }

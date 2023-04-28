@@ -1,6 +1,7 @@
-import { StatusBar } from "expo-status-bar";
-import React from "react";
-import styled from "styled-components/native";
+import React from 'react';
+import styled from 'styled-components/native';
+import Alarm from '../../Alarm';
+import LogIn from './Login';
 
 const Container = styled.View`
   flex: 1;
@@ -12,9 +13,7 @@ const Container = styled.View`
 const MainText = styled.Text``;
 
 export default function More() {
-  return (
-    <Container>
-      <MainText>More</MainText>
-    </Container>
-  );
+	return (
+		<LogIn />
+	);
 }
