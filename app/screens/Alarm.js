@@ -51,11 +51,13 @@ export default function Alarm() {
 	let month = today.getMonth() + 1;  // 월
 	let date = today.getDate();  // 날짜
 	let day = today.getDay();  // 요일
+	let hour = today.getHours(); // 시
+	let minute = today.getMinutes();  // 분
 
 	return (
 		<Container>
 			<SubText>{year}/{month}/{date} {getDay(day)}</SubText>
-			<MainText>07:00</MainText>
+			<MainText>{hour}:{minute}</MainText>
 			<AlarmOffContainer onPress={() => console.log('touched')}>
 				<MaterialIcons name="cancel" size={114} color="rgb(228, 111, 111)" />
 			</AlarmOffContainer>
