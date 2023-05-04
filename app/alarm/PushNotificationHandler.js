@@ -40,6 +40,7 @@ const requestPermissions = (hours, minute, seconds, day) => {
 		repeatType: 'week', //'week' | 'day' | 'hour' | 'minute' | 'time' | undefined;
 		date: targetDate.getDate(),
 		repeatTime: day, //반복할 요일
+		userInteraction: true,
 	});
 
 	// 예약된 알림 정보 출력
