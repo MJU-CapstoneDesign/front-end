@@ -1,21 +1,37 @@
-import React from "react";
-import styled from "styled-components/native";
-import Root from "./navigation/Root";
-import { NavigationContainer } from "@react-navigation/native";
-
-const Container = styled.View`
-  flex: 1;
-  background-color: #fff;
-  align-items: center;
-  justify-content: center;
-`;
-
-const MainText = styled.Text``;
+import React, { useState, useEffect } from 'react';
+import Root from './navigation/Root';
+import { NavigationContainer } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import LogIn from './screens/Home/Login';
 
 export default function App() {
-  return (
-    <NavigationContainer>
-      <Root />
-    </NavigationContainer>
-  );
+	const [token, setToken] = useState(null);
+
+	useEffect(() => {
+		const getToken = async () => {
+			try {
+				const value = await AsyncStorage.getItem('jwts');
+				if (value !== null) {
+					const data = JSON.parse(value);
+					setToken(data.accessToken);
+				} else {
+					console.log('저장된 JWT 토큰이 없습니다.');
+				}
+			} catch (error) {
+				console.log('JWT 토큰을 검색하는 동안 오류가 발생했습니다:', error);
+			}
+		};
+		getToken();
+	}, []);
+
+	if (token !== null) {
+		return (
+			<NavigationContainer>
+				<Root />
+			</NavigationContainer>
+		);
+	} else {
+		return <LogIn />;
+	}
 }
+  

@@ -12,9 +12,9 @@ const Container = styled.View`
 const MainText = styled.Text``;
 
 export default function More() {
-  return (
-    <Container>
-      <MainText>More</MainText>
-    </Container>
-  );
+	return (
+		<Container>
+			<MainText>More</MainText>
+		</Container>
+	);
 }
