@@ -3,7 +3,7 @@ import { TouchableOpacity, Text, View, TextInput, Image } from "react-native";
 import styled from "styled-components/native";
 import { AntDesign } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import { launchImageLibrary } from "react-native-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { useState } from "react";

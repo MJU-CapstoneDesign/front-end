@@ -10,6 +10,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
+import HomeFeedStack from "./HomeFeedStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -23,8 +24,8 @@ export default function HomeBottomTabs() {
       }}
     >
       <Tab.Screen
-        name="HomeTabs"
-        component={HomeTabs}
+        name="HomeFeedStack"
+        component={HomeFeedStack}
         options={{
           tabBarIcon: ({ focused }) =>
             focused ? (

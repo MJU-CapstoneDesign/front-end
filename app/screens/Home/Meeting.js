@@ -1,6 +1,9 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import styled from "styled-components/native";
+import { TouchableOpacity } from "react-native";
+import Feed from "../Feed";
+import FeedTabs from "../../navigation/FeedTab";
 
 const Container = styled.View`
   flex: 1;
@@ -11,10 +14,16 @@ const Container = styled.View`
 
 const MainText = styled.Text``;
 
-export default function Meeting() {
+export default function Meeting({ navigation }) {
   return (
     <Container>
-      <MainText>Meeting</MainText>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate(FeedTabs);
+        }}
+      >
+        <MainText>Meeting</MainText>
+      </TouchableOpacity>
     </Container>
   );
 }
