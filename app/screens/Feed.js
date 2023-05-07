@@ -1,4 +1,3 @@
-import { StatusBar } from "expo-status-bar";
 import React from "react";
 import styled from "styled-components/native";
 import {
@@ -12,7 +11,7 @@ import {
   Dimensions,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 
 // 화면 전체를 채우는 컨테이너 (사용할지 안할지 정해지지않음)
@@ -384,9 +383,7 @@ function Feed({ navigation }) {
                     color="black"
                   />{" "}
                   {GroupInfoApi.groupDate}[{GroupInfoApi.groupDays}]{"  "}
-                  <View style={{ marginTop: 20 }}>
-                    <MaterialIcons name="alarm" size={12} color="black" />
-                  </View>
+                  <Ionicons name="ios-alarm-outline" size={12} color="black" />
                   {GroupInfoApi.groupAlarmTime}
                 </Text>
               </DateView>
