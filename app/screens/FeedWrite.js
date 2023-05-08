@@ -48,14 +48,26 @@ function FeedWrite({ navigation }) {
   // 이미지 선택 함수
   const openImagePicker = () => {
     launchImageLibrary({ mediaType: "photo" }, (response) => {
-      if (response) {
+      if (response.didCancel) {
+        console.log("User cancelled image picker");
+      } else if (response) {
         setSelectedImage(response);
       }
     });
   };
+
+  //  selectedImage 구조확인
   // useEffect(() => {
-  //   console.log(selectedImage.assets[0].uri);
+  //   console.log(selectedImage);
   // }, [selectedImage]);
+
+  // text 스테이트 확인
+  useEffect(() => {
+    console.log(text);
+  }, [text]);
+
+  // 서버로 보낼 text 변수 저장
+  const [text, setText] = useState("");
 
   return (
     <>
@@ -70,6 +82,7 @@ function FeedWrite({ navigation }) {
               onPress={() => {
                 navigation.goBack();
               }}
+              style={{ width: 30 }}
             >
               <AntDesign name="left" size={25} color="black" />
             </TouchableOpacity>
@@ -92,11 +105,18 @@ function FeedWrite({ navigation }) {
             placeholder="내용을 입력해주세요."
             multiline={true}
             style={{ marginTop: 15, marginLeft: 15, fontSize: 17 }}
+            onChangeText={(text) => setText(text)}
           />
         </WriteContainer>
-        {selectedImage !== undefined ? (
+        {selectedImage !== null ? (
           <>
-            <View style={{ flex: 0.23, flexDirection: "row" }}>
+            <View
+              style={{
+                flex: 0.23,
+                flexDirection: "row",
+                marginBottom: 10,
+              }}
+            >
               <Image
                 source={{ uri: selectedImage.assets[0].uri }}
                 style={{ width: 100, height: 100 }}
@@ -106,14 +126,6 @@ function FeedWrite({ navigation }) {
         ) : (
           <></>
         )}
-        {/* <View style={{ flex: 0.3, marginBottom: 5 }}>
-          {selectedImage && (
-            <Image
-              source={{ uri: selectedImage.assets[0].uri }}
-              style={{ width: 100, height: 100 }}
-            />
-          )} */}
-        {/* </View> */}
         <ImageContainer>
           <TouchableOpacity onPress={openImagePicker}>
             <MaterialIcons

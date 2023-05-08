@@ -6,6 +6,7 @@ import Meeting from "../screens/Home/Meeting";
 import MyMeeting from "../screens/Home/MyMeeting";
 import Feed from "../screens/Feed";
 import Chatting from "../screens/Home/Chatting";
+import FeedWrite from "../screens/FeedWrite";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +23,7 @@ function HomeFeedStack() {
       <Stack.Screen name="MyMeeting" component={MyMeeting} />
       <Stack.Screen name="Feed" component={Feed} />
       <Stack.Screen name="Chatting" component={Chatting} />
+      <Stack.Screen name="FeedWrite" component={FeedWrite} />
     </Stack.Navigator>
   );
 }

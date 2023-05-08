@@ -22,8 +22,8 @@ const BeforeContainer = styled.View`
 
 const MainText = styled.Text``;
 
-// 토큰을 가지고 있는지 확인하는 화면
-const haveTokken = false;
+// 참여했는지의 여부를 나타내는 변수
+const Joined = false;
 
 // 기기화면에 맞는 변수 설정
 const { width, height } = Dimensions.get("window");
@@ -36,7 +36,7 @@ const NotJoinText = styled.Text`
 `;
 
 export default function Chatting() {
-  return haveTokken ? (
+  return Joined ? (
     <Container>
       <MainText>채팅화면</MainText>
     </Container>
