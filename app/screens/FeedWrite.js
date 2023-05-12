@@ -1,12 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { TouchableOpacity, Text, View, TextInput, Image } from "react-native";
 import styled from "styled-components/native";
 import { AntDesign } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { launchImageLibrary } from "react-native-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
-
+import { URL } from "../api";
 import { useState } from "react";
+import { TokenContext } from "./Home/TokenContext";
 
 // 전체 컨테이너
 const Container = styled.View`
@@ -36,14 +37,12 @@ const ImageContainer = styled.View`
 `;
 
 function FeedWrite({ navigation }) {
-  // 뒤로가기 버튼
-  const goBack = () => {
-    navigation.goBack();
-  };
-
   // 이미지 스테이트
-  // const [imageUri, setImageUri] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // 토큰 값 (useContext 사용)
+  const { token } = useContext(TokenContext);
+  console.log(token);
 
   // 이미지 선택 함수
   const openImagePicker = () => {
@@ -68,6 +67,32 @@ function FeedWrite({ navigation }) {
 
   // 서버로 보낼 text 변수 저장
   const [text, setText] = useState("");
+  ``;
+  // 서버로 보낼 이미지 변수 저장
+  const [image, setImage] = useState("");
+
+  // 서버로 보낼 때 사용하는 함수
+
+  const sendDataToServer = () => {
+    fetch(`${URL}/feed/create/withoutImg/post`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        content: text,
+        partyId: 14,
+      }),
+    })
+      .then((response) => {
+        console.log("서버 응답: ", response);
+      })
+      .catch((error) => {
+        console.log("에러 발생: ", error);
+      });
+    // navigation.goBack();
+  };
 
   return (
     <>
@@ -95,7 +120,7 @@ function FeedWrite({ navigation }) {
               marginTop: 2,
             }}
           >
-            <TouchableOpacity>
+            <TouchableOpacity onPress={sendDataToServer}>
               <Text style={{ fontSize: 17, fontWeight: "bold" }}>올리기</Text>
             </TouchableOpacity>
           </View>

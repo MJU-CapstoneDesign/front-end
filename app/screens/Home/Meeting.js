@@ -2,7 +2,6 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import styled from "styled-components/native";
 import { TouchableOpacity } from "react-native";
-import Feed from "../Feed";
 import FeedTabs from "../../navigation/FeedTab";
 
 const Container = styled.View`

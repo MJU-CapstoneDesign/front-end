@@ -13,6 +13,8 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import { URL } from "../api";
+import { useContext } from "react";
 
 // 화면 전체를 채우는 컨테이너 (사용할지 안할지 정해지지않음)
 const Container = styled.View`
