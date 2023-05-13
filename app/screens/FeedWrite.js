@@ -44,6 +44,9 @@ function FeedWrite({ navigation }) {
   const { token } = useContext(TokenContext);
   console.log(token);
 
+  // 올리기 버튼후 화면 렌더링
+  const [count, setCount] = useState(0);
+
   // 이미지 선택 함수
   const openImagePicker = () => {
     launchImageLibrary({ mediaType: "photo" }, (response) => {
@@ -55,18 +58,13 @@ function FeedWrite({ navigation }) {
     });
   };
 
-  //  selectedImage 구조확인
-  // useEffect(() => {
-  //   console.log(selectedImage);
-  // }, [selectedImage]);
-
   // text 스테이트 확인
   useEffect(() => {
     console.log(text);
   }, [text]);
 
   // 서버로 보낼 text 변수 저장
-  const [text, setText] = useState("");
+  const [text, setText] = useState(null);
   ``;
   // 서버로 보낼 이미지 변수 저장
   const [image, setImage] = useState("");
@@ -74,24 +72,27 @@ function FeedWrite({ navigation }) {
   // 서버로 보낼 때 사용하는 함수
 
   const sendDataToServer = () => {
-    fetch(`${URL}/feed/create/withoutImg/post`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        content: text,
-        partyId: 14,
-      }),
-    })
-      .then((response) => {
-        console.log("서버 응답: ", response);
+    if (text !== null)
+      fetch(`${URL}/feed/create/withoutImg/post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: text,
+          partyId: 14,
+        }),
       })
-      .catch((error) => {
-        console.log("에러 발생: ", error);
-      });
-    // navigation.goBack();
+        .then((response) => {
+          console.log("서버 응답: ", response);
+        })
+        .catch((error) => {
+          console.log("에러 발생: ", error);
+        });
+
+    setCount(count + 1);
+    navigation.goBack();
   };
 
   return (

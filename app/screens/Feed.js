@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components/native";
 import {
   FlatList,
@@ -15,6 +15,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { URL } from "../api";
 import { useContext } from "react";
+import { TokenContext } from "./Home/TokenContext";
+import { ActivityIndicator } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 
 // 화면 전체를 채우는 컨테이너 (사용할지 안할지 정해지지않음)
 const Container = styled.View`
@@ -93,11 +96,6 @@ const CommentFormView = styled.View`
   margin-bottom: 15px;
 `;
 
-// 그룹의 백그라운드이미지와 상세정보 컨테이너 (사용할지 안할지 정해지지않음)
-const DetailContainer = styled.View`
-  flex: 1;
-`;
-
 // 그룹의 백그라운드 이미지
 const BackImgView = styled.View`
   flex: 1;
@@ -171,13 +169,103 @@ const WriteButtonContainer = styled.View`
 
 // 피드 컴포넌트
 function Feed({ navigation }) {
+  // 토큰 저장할 것
+  const { token } = useContext(TokenContext);
+
+  // 피드 api 호출
+  const [feed, setFeed] = useState(null);
+
+  // 파티 아이디 저장
+  // const feed_id = 14;
+  const [feed_id, setFeed_id] = useState(null);
+  useEffect(() => {
+    setFeed_id(14);
+  }, []);
+
+  // 추후에 홈화면에서 받아오는것으로 결정.
+
+  // 로딩화면 결정
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 피드 api와 멤버 api 결과 합친 결과값
+  const [assembleData, setAssembleData] = useState(null);
+
+  // 게시글 올리기 혹은 취소 눌렀을때 화면 재렌더링
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    fetchFeed();
+  }, [isFocused]);
+
+  // 피드 api 호출 (member api 호출해서 둘의 배열 합침)
+
+  const fetchFeed = async () => {
+    setIsLoading(true); // isLoading 값을 true로 설정
+    try {
+      const response = await fetch(`${URL}/feed/find/${feed_id}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      setFeed(data);
+    } catch (error) {
+      console.log(error);
+      console.log("Error in fetchFeed");
+    }
+  };
+
+  useEffect(() => {
+    if (feed && feed.posts)
+      Promise.all(
+        feed.posts.map((item) => {
+          return fetch(`${URL}/member/info/${item.memberId}`, {
+            method: "GET",
+            headers: {
+              Authorization:
+                "Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiaWF0IjoxNjgzNTU0NDUyLCJleHAiOjE2ODUwMjU2ODF9.Qyt8ThbUPhOONmgln-0uZnZZsrLJyTeAt-ICXQ_7rQ8",
+            },
+          })
+            .then((response) => response.json())
+            .then((member) => {
+              return {
+                ...item,
+                name: member.name,
+                profile: member.profile,
+              };
+            });
+        })
+      )
+        .then((newData) => {
+          setAssembleData(newData.reverse());
+        })
+        .then(() => {
+          setIsLoading(false);
+        });
+  }, [feed]);
+
+  useEffect(() => {
+    fetchFeed(feed_id);
+  }, [feed_id]);
+
+  // 유저 닉네임
+  const [nickname, setNickname] = useState(null);
+
+  // 유저 프로필
+  const [profile, setProfile] = useState(null);
+
+  // 사용자 정보(닉네임, 프로필사진등)받아오는 api
+  const [userInfo, setUserInfo] = useState(null);
+
   // 현재 사용자의 기본정보
   const user = {
     name: "풀스택 유니콘",
     profile:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSI2mnR4-xwTqF_l0XNYbVe3NyHn24R0REgpQ&usqp=CAUg",
   };
+
   // 피드 하나를 컴포넌트화
+
   const FeedComponent = ({ content, profile, time, image, name }) => {
     return (
       <>
@@ -242,76 +330,6 @@ function Feed({ navigation }) {
     );
   };
 
-  // 피드 데이터 api
-  const DATA = [
-    {
-      id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-      title: "첫번째 게시글",
-      content: "오늘도 힘내서 코딩하세요~!~!",
-      backColor: "red",
-      time: "10분전",
-      name: "코딩천재",
-      profile:
-        "https://talkimg.imbc.com/TVianUpload/tvian/TViews/image/2020/03/27/5561b209-4809-4c6e-9f8b-33d0e7792de8.jpg",
-    },
-    {
-      id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-      title: "두번째 게시글",
-      content: "#오코완! 모두 오늘 하루도 고생하셨습니다😊",
-      backColor: "blue",
-      time: "1시간전",
-      name: "나무늘보",
-      profile: "https://d2v80xjmx68n4w.cloudfront.net/gigs/JaqkS1637331647.jpg",
-      image:
-        "https://fernando.kr/static/af1e2ab43e2bf121d17011feb1888657/c1b63/contributions.png",
-    },
-    {
-      id: "58694a0f-3da1-471f-bd96-145571e29d72",
-      title: "세번째 게시글",
-      content: "챗지피티 덕분에 야근 피했습니다..!!!",
-      backColor: "green",
-      time: "1일전",
-      name: "챗지피티짱",
-      profile:
-        "https://ondostudio.co.kr/wp-content/uploads/2019/12/2-5-683x1024.jpg",
-    },
-    {
-      id: "bd7acbea-c1b1-46c2-aed5-3ad53abb2800",
-      title: "첫번째 게시글",
-      content:
-        "코딩 할때 박효신님 노래 들으니까 마음이 편해지네요ㅎㅎ 에러도 무섭지 않다!😎",
-      backColor: "red",
-      time: "2일전",
-      name: "박효신하트",
-      profile:
-        "http://gangnamstar.co.kr/files/attach/images/119/904/027/99b6e593de5df80fd08141a0db2c2166.jpg",
-      image:
-        "https://wimg.mk.co.kr/meet/neds/2019/06/image_readtop_2019_472045_15618899413807825.jpg",
-    },
-    {
-      id: "bd7acbea-c1b1-46c2-aed5-3ad53abb2822",
-      title: "첫번째 게시글",
-      content: "아 1px만 옮겨달라구요..?ㅎㅎ",
-      backColor: "red",
-      time: "2일전",
-      name: "야근그만좀",
-      profile:
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/%EC%98%81%ED%99%94%EB%B0%B0%EC%9A%B0_%EB%B0%95%EA%B7%BC%EB%A1%9D_%ED%94%84%EB%A1%9C%ED%95%84_%EC%82%AC%EC%A7%841.jpg/1365px-%EC%98%81%ED%99%94%EB%B0%B0%EC%9A%B0_%EB%B0%95%EA%B7%BC%EB%A1%9D_%ED%94%84%EB%A1%9C%ED%95%84_%EC%82%AC%EC%A7%841.jpg",
-    },
-    {
-      id: "bd7acbea-c1b1-46c2-aed5-3ad53abb2811",
-      title: "첫번째 게시글",
-      content: "코딩 끝내고 먹는 치맥이 최고죠😋",
-      backColor: "red",
-      time: "3일전",
-      name: "수원왕갈비통닭",
-      profile:
-        "https://thumbnews.nateimg.co.kr/view610///news.nateimg.co.kr/orgImg/sw/2021/05/20/20210520514012.jpg",
-      image:
-        "https://mblogthumb-phinf.pstatic.net/MjAyMDEwMTZfODEg/MDAxNjAyODU0MTgxODA4.ETOK5TakyOl4gqagooA9KGg6Cf8RgJYCXaCkLTPMdlsg.NI9Q5bYtNror7q7NHKN27M2cq1zIevPD4UkxzgW2k2sg.JPEG.hoyhoy901/1602854181339.jpg?type=w800",
-    },
-  ];
-
   // 그룹 기본정보 api
   const GroupInfoApi = {
     groupCapProfile:
@@ -343,7 +361,14 @@ function Feed({ navigation }) {
     navigation.navigate("FeedWrite");
   };
 
-  // 글쓰기 버튼 클릭 시 함수
+  // api가 로딩중일 때
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return (
     <>
@@ -357,6 +382,7 @@ function Feed({ navigation }) {
             style={{ width: 400, height: 155 }}
           />
         </BackImgView>
+
         <View>
           <InfoView>
             <ProfileView>
@@ -401,14 +427,15 @@ function Feed({ navigation }) {
         <View style={{ backgroundColor: "#F0F0F0", height: 3 }}></View>
         <View>
           <FlatList
-            data={DATA}
+            data={assembleData}
             renderItem={({ item }) => (
               <FeedComponent
                 content={item.content}
                 profile={item.profile}
                 time={item.time}
-                image={item.image}
+                image={item.img}
                 name={item.name}
+                time={item.createdAt}
               />
             )}
             keyExtractor={(item) => item.id}
