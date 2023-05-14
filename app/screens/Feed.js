@@ -257,7 +257,7 @@ function Feed({ navigation }) {
   // 사용자 정보(닉네임, 프로필사진등)받아오는 api
   const [userInfo, setUserInfo] = useState(null);
 
-  // 현재 사용자의 기본정보
+  // 현재 사용자의 기본정보 (후에 홈화면에 받아와야함)
   const user = {
     name: "풀스택 유니콘",
     profile:
@@ -265,8 +265,30 @@ function Feed({ navigation }) {
   };
 
   // 피드 하나를 컴포넌트화
-
   const FeedComponent = ({ content, profile, time, image, name }) => {
+    let formattedDate;
+    // 서버에서 받은 게시글 작성시간을 ui에 맞게변환
+    const dateString = time;
+    const date = new Date(Date.parse(dateString));
+    const now = new Date();
+
+    if (
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear()
+    ) {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const amOrPm = hours >= 12 ? "오후" : "오전";
+      const formattedHours = hours % 12 || 12;
+      const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+      formattedDate = `${amOrPm} ${formattedHours}:${formattedMinutes}`;
+      console.log(formattedDate);
+    } else {
+      formattedDate = `${date.getMonth() + 1}월 ${date.getDate()}일`;
+      console.log(formattedDate);
+    }
+
     return (
       <>
         <FeedComponentContainer>
@@ -282,7 +304,9 @@ function Feed({ navigation }) {
                 <Text style={{ fontWeight: "bold", fontSize: 14 }}>{name}</Text>
               </NicknameView>
               <TimeView>
-                <Text style={{ fontSize: 10, color: "#9B9B9B" }}>{time}</Text>
+                <Text style={{ fontSize: 10, color: "#9B9B9B" }}>
+                  {formattedDate}
+                </Text>
               </TimeView>
             </NickTimeView>
           </ProfileContainer>
@@ -330,7 +354,7 @@ function Feed({ navigation }) {
     );
   };
 
-  // 그룹 기본정보 api
+  // 그룹 기본정보 api (후에 홈화면에서 받아올 정보)
   const GroupInfoApi = {
     groupCapProfile:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBzJTaqg2nmYXRpi_Kmmd256-OqiOB0oZfKA&usqp=CAU",
