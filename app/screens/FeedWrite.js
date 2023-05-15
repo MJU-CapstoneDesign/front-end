@@ -42,10 +42,6 @@ function FeedWrite({ navigation }) {
 
   // 토큰 값 (useContext 사용)
   const { token } = useContext(TokenContext);
-  console.log(token);
-
-  // 올리기 버튼후 화면 렌더링
-  const [count, setCount] = useState(0);
 
   // 이미지 선택 함수
   const openImagePicker = () => {
@@ -63,16 +59,28 @@ function FeedWrite({ navigation }) {
     console.log(text);
   }, [text]);
 
+  useEffect(() => {
+    console.log(selectedImage);
+  }, [selectedImage]);
+
   // 서버로 보낼 text 변수 저장
   const [text, setText] = useState(null);
   ``;
-  // 서버로 보낼 이미지 변수 저장
-  const [image, setImage] = useState("");
 
   // 서버로 보낼 때 사용하는 함수
 
   const sendDataToServer = () => {
-    if (text !== null)
+    const formData = new FormData();
+
+    if (selectedImage !== null)
+      formData.append("img", {
+        uri: selectedImage.assets[0].uri,
+      });
+    formData.append("content", text);
+    formData.append("partyId", 14);
+    console.log("폼데이터의 형태", formData);
+
+    if (text !== null && selectedImage == null) {
       fetch(`${URL}/feed/create/withoutImg/post`, {
         method: "POST",
         headers: {
@@ -90,8 +98,22 @@ function FeedWrite({ navigation }) {
         .catch((error) => {
           console.log("에러 발생: ", error);
         });
-
-    setCount(count + 1);
+    } else if (text !== null && selectedImage !== null) {
+      fetch(`${URL}/feed/create/post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+        .then((response) => {
+          console.log("서버 응답: ", response);
+        })
+        .catch((error) => {
+          console.log("에러 발생: ", error);
+        });
+    }
     navigation.goBack();
   };
 

@@ -267,6 +267,11 @@ function Feed({ navigation }) {
   // 피드 하나를 컴포넌트화
   const FeedComponent = ({ content, profile, time, image, name }) => {
     let formattedDate;
+    let amOrPm;
+    let formattedHours;
+    let formattedMinutes;
+    let hours;
+    let minutes;
     // 서버에서 받은 게시글 작성시간을 ui에 맞게변환
     const dateString = time;
     const date = new Date(Date.parse(dateString));
@@ -277,16 +282,21 @@ function Feed({ navigation }) {
       date.getMonth() === now.getMonth() &&
       date.getFullYear() === now.getFullYear()
     ) {
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-      const amOrPm = hours >= 12 ? "오후" : "오전";
-      const formattedHours = hours % 12 || 12;
-      const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+      hours = date.getHours();
+      minutes = date.getMinutes();
+      amOrPm = hours >= 12 ? "오후" : "오전";
+      formattedHours = hours % 12 || 12;
+      formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
       formattedDate = `${amOrPm} ${formattedHours}:${formattedMinutes}`;
-      console.log(formattedDate);
     } else {
-      formattedDate = `${date.getMonth() + 1}월 ${date.getDate()}일`;
-      console.log(formattedDate);
+      hours = date.getHours();
+      minutes = date.getMinutes();
+      amOrPm = hours >= 12 ? "오후" : "오전";
+      formattedHours = hours % 12 || 12;
+      formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+      formattedDate = `${
+        date.getMonth() + 1
+      }월 ${date.getDate()}일 ${amOrPm} ${formattedHours}:${formattedMinutes}`;
     }
 
     return (
