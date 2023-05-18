@@ -1,12 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { TouchableOpacity, Text, View, TextInput, Image } from "react-native";
 import styled from "styled-components/native";
 import { AntDesign } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import { launchImageLibrary } from "react-native-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
-
+import { URL } from "../api";
 import { useState } from "react";
+import { TokenContext } from "./Home/TokenContext";
 
 // 전체 컨테이너
 const Container = styled.View`
@@ -36,26 +37,85 @@ const ImageContainer = styled.View`
 `;
 
 function FeedWrite({ navigation }) {
-  // 뒤로가기 버튼
-  const goBack = () => {
-    navigation.goBack();
-  };
-
   // 이미지 스테이트
-  // const [imageUri, setImageUri] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // 토큰 값 (useContext 사용)
+  const { token } = useContext(TokenContext);
 
   // 이미지 선택 함수
   const openImagePicker = () => {
     launchImageLibrary({ mediaType: "photo" }, (response) => {
-      if (response) {
+      if (response.didCancel) {
+        console.log("User cancelled image picker");
+      } else if (response) {
         setSelectedImage(response);
       }
     });
   };
-  // useEffect(() => {
-  //   console.log(selectedImage.assets[0].uri);
-  // }, [selectedImage]);
+
+  // text 스테이트 확인
+  useEffect(() => {
+    console.log(text);
+  }, [text]);
+
+  useEffect(() => {
+    console.log(selectedImage);
+  }, [selectedImage]);
+
+  // 서버로 보낼 text 변수 저장
+  const [text, setText] = useState(null);
+  ``;
+
+  // 서버로 보낼 때 사용하는 함수
+
+  const sendDataToServer = () => {
+    const formData = new FormData();
+
+    if (selectedImage !== null)
+      formData.append("img", {
+        uri: selectedImage.assets[0].uri,
+      });
+    formData.append("content", text);
+    formData.append("partyId", 14);
+    console.log("폼데이터의 형태", formData);
+
+    if (text !== null && selectedImage == null) {
+      fetch(`${URL}/feed/create/withoutImg/post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: text,
+          partyId: 14,
+        }),
+      })
+        .then((response) => {
+          console.log("서버 응답: ", response);
+        })
+        .catch((error) => {
+          console.log("에러 발생: ", error);
+        });
+    } else if (text !== null && selectedImage !== null) {
+      fetch(`${URL}/feed/create/post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+        .then((response) => {
+          console.log("서버 응답: ", response);
+        })
+        .catch((error) => {
+          console.log("에러 발생: ", error);
+        });
+    }
+    navigation.goBack();
+  };
 
   return (
     <>
@@ -70,6 +130,7 @@ function FeedWrite({ navigation }) {
               onPress={() => {
                 navigation.goBack();
               }}
+              style={{ width: 30 }}
             >
               <AntDesign name="left" size={25} color="black" />
             </TouchableOpacity>
@@ -82,7 +143,7 @@ function FeedWrite({ navigation }) {
               marginTop: 2,
             }}
           >
-            <TouchableOpacity>
+            <TouchableOpacity onPress={sendDataToServer}>
               <Text style={{ fontSize: 17, fontWeight: "bold" }}>올리기</Text>
             </TouchableOpacity>
           </View>
@@ -92,11 +153,18 @@ function FeedWrite({ navigation }) {
             placeholder="내용을 입력해주세요."
             multiline={true}
             style={{ marginTop: 15, marginLeft: 15, fontSize: 17 }}
+            onChangeText={(text) => setText(text)}
           />
         </WriteContainer>
-        {selectedImage !== undefined ? (
+        {selectedImage !== null ? (
           <>
-            <View style={{ flex: 0.23, flexDirection: "row" }}>
+            <View
+              style={{
+                flex: 0.23,
+                flexDirection: "row",
+                marginBottom: 10,
+              }}
+            >
               <Image
                 source={{ uri: selectedImage.assets[0].uri }}
                 style={{ width: 100, height: 100 }}
@@ -106,14 +174,6 @@ function FeedWrite({ navigation }) {
         ) : (
           <></>
         )}
-        {/* <View style={{ flex: 0.3, marginBottom: 5 }}>
-          {selectedImage && (
-            <Image
-              source={{ uri: selectedImage.assets[0].uri }}
-              style={{ width: 100, height: 100 }}
-            />
-          )} */}
-        {/* </View> */}
         <ImageContainer>
           <TouchableOpacity onPress={openImagePicker}>
             <MaterialIcons
