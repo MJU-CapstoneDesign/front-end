@@ -53,6 +53,11 @@ target 'danram' do
   pod 'Firebase/CoreOnly', :modular_headers => true
   pod 'Firebase', :modular_headers => true
 
+
+  pod 'Firebase/Core'
+  pod 'Firebase/Analytics'
+  pod 'Firebase/Messaging'
+
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
