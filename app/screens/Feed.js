@@ -241,16 +241,20 @@ function Feed({ navigation }) {
   // // 댓글 api 멤버 프로필이랑 이름 추가하기
   // const [assembleCommentData, setAssembleCommentData] = useState(null);
 
-  // 게시글 올리기 혹은 취소 눌렀을때 화면 재렌더링
+  // 게시글 올리기 혹은 취소 눌렀을때 화면 재렌더링(로딩화면)
   const isFocused = useIsFocused();
   useEffect(() => {
     fetchFeed();
+    if (commentUpdate === true && isFocused === false) {
+      setCommentUpdate(false);
+    }
   }, [isFocused]);
 
   // 피드 api 호출 함수
   const fetchFeed = async () => {
-    setIsLoading(true); // isLoading 값을 true로 설정
     try {
+      setIsLoading(true); // isLoading 값을 true로 설정
+
       const response = await fetch(`${URL}/feed/find/${feed_id}`, {
         method: "GET",
         headers: {
@@ -312,15 +316,31 @@ function Feed({ navigation }) {
   // 댓글 저장할 Ref
   const commentRef = useRef("");
 
+  // 사용자 정보 저장 state
+  const [user, setUser] = useState(null);
+
   // 댓글 작성후 재렌더링위한 함수
   const [commentCount, setCommentCount] = useState(true);
 
   // 현재 사용자의 기본정보 (후에 홈화면에 받아와야함)
-  const user = {
-    name: "풀스택 유니콘",
-    profile:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSI2mnR4-xwTqF_l0XNYbVe3NyHn24R0REgpQ&usqp=CAUg",
-  };
+  useEffect(() => {
+    fetch(`${URL}/member/info`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        setUser(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
   // 댓글 하나 컴포넌트화
   const CommentComponent = ({ content, profile, time, name }) => {
     let formattedDate;
@@ -501,11 +521,11 @@ function Feed({ navigation }) {
             />
             <TouchableOpacity
               style={{ marginLeft: -50, marginRight: 30, marginTop: 5 }}
-              onPress={() => {
+              onPress={async () => {
                 const comment = commentRef.current;
                 if (comment !== "") {
+                  setCommentUpdate(true);
                   commentUpload(comment, postId);
-                  setCommentCount(!commentCount);
                   fetchFeed(feed_id);
                 }
               }}
@@ -554,8 +574,16 @@ function Feed({ navigation }) {
     setIsJoin(!isJoin);
   };
 
+  // 댓글 재렌더링 처리부분
   // 댓글 업데이트 확인하는 state
   const [commentUpdate, setCommentUpdate] = useState(false);
+
+  function commentUpdateFunc() {
+    return new Promise(function (resolve, reject) {
+      setCommentUpdate(true);
+      resolve();
+    });
+  }
 
   // 댓글 올리기 함수호출 api
   const commentUpload = (comment, postId) => {
@@ -572,9 +600,7 @@ function Feed({ navigation }) {
       }),
     })
       .then((res) => res.json())
-      .then((res) => {
-        console.log(res);
-      })
+
       .catch((err) => {
         console.log(err);
       });
@@ -588,7 +614,7 @@ function Feed({ navigation }) {
   };
 
   // api가 로딩중일 때
-  if (isLoading) {
+  if (isLoading && !commentUpdate) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator />
@@ -596,7 +622,7 @@ function Feed({ navigation }) {
     );
 
     // 최초 화면 시작시 api 연동끝났을때
-  } else if (!isLoading) {
+  } else if (!isLoading || (isLoading && commentUpdate)) {
     return (
       <>
         <ScrollView
