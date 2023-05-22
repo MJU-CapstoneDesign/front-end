@@ -4,6 +4,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LogIn from "./screens/Home/Login";
 import { TokenProvider } from "./screens/Home/TokenContext";
+import { QueryClient, QueryClientProvider } from "react-query";
+
+const queryClient = new QueryClient();
 
 export default function App() {
   const [token, setToken] = useState(null);
@@ -28,9 +31,11 @@ export default function App() {
   if (token !== null) {
     return (
       <TokenProvider>
+        <QueryClientProvider client={queryClient}>
         <NavigationContainer>
           <Root token={token} />
         </NavigationContainer>
+        </QueryClientProvider>
       </TokenProvider>
     );
   } else {
