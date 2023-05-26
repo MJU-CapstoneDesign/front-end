@@ -4,9 +4,17 @@ import { NavigationContainer } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LogIn from "./screens/Home/Login";
 import { TokenProvider } from "./screens/Home/TokenContext";
+import Loading from "./screens/Home/Loading";
 
 export default function App() {
   const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     const getToken = async () => {
@@ -29,7 +37,7 @@ export default function App() {
     return (
       <TokenProvider>
         <NavigationContainer>
-          <Root token={token} />
+          {isLoading ? <Loading /> : <Root token={token} />}
         </NavigationContainer>
       </TokenProvider>
     );

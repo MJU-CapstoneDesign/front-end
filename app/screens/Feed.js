@@ -19,6 +19,7 @@ import { TokenContext } from "./Home/TokenContext";
 import { ActivityIndicator } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { FontAwesome } from "@expo/vector-icons";
+import { adminToken } from "../api";
 
 // 화면 전체를 채우는 컨테이너 (사용할지 안할지 정해지지않음)
 const Container = styled.View`
@@ -276,8 +277,7 @@ function Feed({ navigation }) {
           return fetch(`${URL}/member/info/${item.memberId}`, {
             method: "GET",
             headers: {
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiaWF0IjoxNjgzNTU0NDUyLCJleHAiOjE2ODUwMjU2ODF9.Qyt8ThbUPhOONmgln-0uZnZZsrLJyTeAt-ICXQ_7rQ8",
+              Authorization: `Bearer ${adminToken}`,
             },
           })
             .then((response) => response.json())
@@ -518,6 +518,7 @@ function Feed({ navigation }) {
                 height: 25,
                 flex: 1,
               }}
+              editable={isJoin}
             />
             <TouchableOpacity
               style={{ marginLeft: -50, marginRight: 30, marginTop: 5 }}
@@ -570,8 +571,25 @@ function Feed({ navigation }) {
   // 그룹에 참여해있는지 여부
   const [isJoin, setIsJoin] = useState(false);
 
+  // 파티 아이디 저장(홈화면에서 받아와야 함)
+  const partyId = 14;
+
+  // 참여하기 눌렀을때 함수
   const JoinButton = () => {
     setIsJoin(!isJoin);
+    fetch(`${URL}/party/add/${partyId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   // 댓글 재렌더링 처리부분
@@ -608,7 +626,6 @@ function Feed({ navigation }) {
     commentRef.current = "";
   };
 
-  // 참여하기 버튼 클릭 시 함수
   const WriteButton = () => {
     navigation.navigate("FeedWrite");
   };
