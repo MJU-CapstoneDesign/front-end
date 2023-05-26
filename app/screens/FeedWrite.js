@@ -1,5 +1,12 @@
 import React, { useContext, useEffect } from "react";
-import { TouchableOpacity, Text, View, TextInput, Image } from "react-native";
+import {
+  TouchableOpacity,
+  Text,
+  View,
+  TextInput,
+  Image,
+  Platform,
+} from "react-native";
 import styled from "styled-components/native";
 import { AntDesign } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,6 +15,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { URL } from "../api";
 import { useState } from "react";
 import { TokenContext } from "./Home/TokenContext";
+import storage from "@react-native-firebase/storage";
 
 // 전체 컨테이너
 const Container = styled.View`
@@ -45,19 +53,22 @@ function FeedWrite({ navigation }) {
 
   // 이미지 선택 함수
   const openImagePicker = () => {
-    launchImageLibrary({ mediaType: "photo" }, (response) => {
-      if (response.didCancel) {
-        console.log("User cancelled image picker");
-      } else if (response) {
-        setSelectedImage(response);
+    launchImageLibrary(
+      { mediaType: "photo", includeBase64: Platform.OS === "android" },
+      (response) => {
+        if (response.didCancel) {
+          console.log("User cancelled image picker");
+        } else if (response) {
+          setResponse(response);
+          setSelectedImage(response);
+        }
       }
-    });
+    );
   };
 
-  // text 스테이트 확인
   useEffect(() => {
-    console.log(text);
-  }, [text]);
+    imageConvert();
+  }, [selectedImage]);
 
   useEffect(() => {
     console.log(selectedImage);
@@ -65,22 +76,11 @@ function FeedWrite({ navigation }) {
 
   // 서버로 보낼 text 변수 저장
   const [text, setText] = useState(null);
-  ``;
 
   // 서버로 보낼 때 사용하는 함수
 
   const sendDataToServer = () => {
-    const formData = new FormData();
-
-    if (selectedImage !== null)
-      formData.append("img", {
-        uri: selectedImage.assets[0].uri,
-      });
-    formData.append("content", text);
-    formData.append("partyId", 14);
-    console.log("폼데이터의 형태", formData);
-
-    if (text !== null && selectedImage == null) {
+    if (text !== null) {
       fetch(`${URL}/feed/create/withoutImg/post`, {
         method: "POST",
         headers: {
@@ -90,22 +90,8 @@ function FeedWrite({ navigation }) {
         body: JSON.stringify({
           content: text,
           partyId: 14,
+          img: imageUri,
         }),
-      })
-        .then((response) => {
-          console.log("서버 응답: ", response);
-        })
-        .catch((error) => {
-          console.log("에러 발생: ", error);
-        });
-    } else if (text !== null && selectedImage !== null) {
-      fetch(`${URL}/feed/create/post`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
       })
         .then((response) => {
           console.log("서버 응답: ", response);
@@ -117,6 +103,35 @@ function FeedWrite({ navigation }) {
     navigation.goBack();
   };
 
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [imageUri, setImageUri] = useState("");
+
+  const imageConvert = async () => {
+    setLoading(true);
+    let imageUrl = null;
+    if (response) {
+      const asset = response.assets[0];
+      const reference = storage().ref(`/profile/${asset.fileName}`); // 업로드할 경로 지정
+      if (Platform.OS === "android") {
+        // 안드로이드
+        // 파일 업로드
+        await reference.putString(asset.base64, "base64", {
+          contentType: asset.type,
+        });
+      } else {
+        // iOS
+        // 파일 업로드
+        await reference.putFile(asset.uri);
+      }
+      imageUrl = response ? await reference.getDownloadURL() : null;
+    }
+    setImageUri(imageUrl);
+    console.log("imageUrl", imageUrl);
+
+    // imageUrl 사용 로직 ...
+  };
+
   return (
     <>
       <SafeAreaView
@@ -124,6 +139,9 @@ function FeedWrite({ navigation }) {
         style={{ flex: 0.01, backgroundColor: "white" }}
       />
       <Container>
+        {loading
+          ? console.log("fireStore", imageUri)
+          : console.log("not loading")}
         <TopContainer>
           <View style={{ flex: 1 }}>
             <TouchableOpacity
@@ -143,14 +161,43 @@ function FeedWrite({ navigation }) {
               marginTop: 2,
             }}
           >
-            <TouchableOpacity onPress={sendDataToServer}>
-              <Text style={{ fontSize: 17, fontWeight: "bold" }}>올리기</Text>
+            <TouchableOpacity
+              onPress={
+                (selectedImage !== null && text !== "" && text !== null) ||
+                (text !== "" && text !== null)
+                  ? sendDataToServer
+                  : null
+              }
+              disabled={
+                (selectedImage !== null &&
+                  text !== null &&
+                  imageUri === null) ||
+                (selectedImage === null && text === null)
+              }
+            >
+              <Text
+                style={[
+                  {
+                    fontSize: 17,
+                    fontWeight: "bold",
+                    color:
+                      (selectedImage !== null &&
+                        text !== "" &&
+                        text !== null) ||
+                      (text !== "" && text !== null)
+                        ? "black"
+                        : "grey",
+                  },
+                ]}
+              >
+                올리기
+              </Text>
             </TouchableOpacity>
           </View>
         </TopContainer>
         <WriteContainer>
           <TextInput
-            placeholder="내용을 입력해주세요."
+            placeholder="이미지를 올릴때는 올리기 버튼이 활성화될때까지 잠시만 기다려주세요."
             multiline={true}
             style={{ marginTop: 15, marginLeft: 15, fontSize: 17 }}
             onChangeText={(text) => setText(text)}
@@ -166,7 +213,7 @@ function FeedWrite({ navigation }) {
               }}
             >
               <Image
-                source={{ uri: selectedImage.assets[0].uri }}
+                source={{ uri: selectedImage?.assets[0]?.uri }}
                 style={{ width: 100, height: 100 }}
               />
             </View>
