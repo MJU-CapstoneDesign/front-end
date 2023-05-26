@@ -52,6 +52,11 @@ target 'danram' do
 
   pod 'Firebase/CoreOnly', :modular_headers => true
   pod 'Firebase', :modular_headers => true
+  pod 'react-native-date-picker', :path => '../node_modules/react-native-date-picker'
+
+  pod 'Firebase/Core'
+  pod 'Firebase/Analytics'
+  pod 'Firebase/Messaging'
 
   use_react_native!(
     :path => config[:reactNativePath],

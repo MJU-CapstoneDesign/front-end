@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {View, Text, TouchableOpacity, Modal} from "react-native";
+import {View, Text, TouchableOpacity, Modal, Image, } from "react-native";
 
 import {Agenda} from 'react-native-calendars';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -8,20 +8,11 @@ import {calStyles, styles} from '../../styles/compStyles';
 
 const URL = 'http://danram-api.duckdns.org:8080';
 
-const formData = new FormData();
-formData.append('alarmFrequency', '01:00');
-formData.append('alarmTime', '2023-05-19');
-formData.append('description', 'Moaning');
-formData.append('endAt', '10:00');
-formData.append('groupName', 'abc');
-formData.append('groupType', 'aaa');
-formData.append('location', 'school');
-formData.append('max', 5);
-formData.append('partyImage', {uri : 'bbb'});
-formData.append('startAt', 'ccc');
-
 const timeToString = (time) => {
   const date = new Date(time);
+  return date.toISOString().split('T')[0];
+}
+const dateToString = (date) =>{
   return date.toISOString().split('T')[0];
 }
 
@@ -29,6 +20,7 @@ const getToken = async () => {
   try{
     const value = await AsyncStorage.getItem('jwts');
     const data = JSON.parse(value);
+    console.log('the doten is ', data);
     return data.accessToken;
   }catch (error) {
     console.log('JWT 토큰을 검색하는 동안 오류가 발생:', error);
@@ -37,11 +29,12 @@ const getToken = async () => {
 }
 
 const MyCalendar = () => {
-  const [partyInfo, setPartyInfo] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalDay, setModalDay] = useState(null);
-  const [modalName, setModalName] = useState(null);
 
+  // partyInfo는 여러 파티가 들었다.
+  let partyInfo = null;
+
+  const dumiEndAt = "2023-05-24T21:12:12";
   const closeModal = () => {
     setModalVisible(false);
     console.log('close call');
@@ -50,8 +43,26 @@ const MyCalendar = () => {
     else
       console.log('its false');
   };
+  let myNum;
+  const handleGetMyInfo = async () => {
+    const TOKEN = await getToken();
+    await fetch(URL + '/member/info', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + TOKEN,
+        'Content-Type': 'application/json',
+      },
+    })
+        .then(data => data.json())
+        .then(data => {
+          console.log('response success:' + data + 'is data');
+          myNum = data.name;
+        })
+        .catch(error => {
+          console.error('Failed : ' + error);
+        });
+  };
   const handleGetPartyInfo = async (TOKEN) => {
-
     const response = await fetch(URL + '/party/myInfo', {
       method: 'GET',
       headers: {
@@ -60,99 +71,137 @@ const MyCalendar = () => {
       },
     })
         .then(data => data.json())
-        .then(data => { console.log('my party : ', data)})
+        .then(data => {
+          partyInfo = data;
+          console.log('call party : ', data);
+        })
         .catch(error => {
           console.error('Failed : ' + error);
         });
-    return response;
   };
-
-  const handleCreateParty = async (formdata) => {
+  const handleGetPartyInfoByNum = async () => {
     const TOKEN = await getToken();
-    const response = await fetch(URL + '/party/create',{
-      method: 'POST',
+    await handleGetMyInfo();
+
+    const response = await fetch(URL + '/party/info/user/' + myNum, {
+      method: 'GET',
       headers: {
         'Authorization': 'Bearer ' + TOKEN,
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json',
       },
-      body: formdata,
-    });
-
-    return response;
+    })
+        .then(data => data.json())
+        .then(data => {
+          partyInfo = data;
+          console.log('call party by num : ', data);
+        })
+        .catch(error => {
+          console.error('Failed by num : ' + error);
+        });
   }
 
   useEffect(()=>{
     const initialize = async () => {
 
-        const t = await getToken();
-        if (t !== null) {
-          console.log('formData is ', formData);
-          const TOKEN = await getToken();
-          const response = await fetch(URL + '/party/create',{
-            method: 'POST',
-            headers: {
-              'Authorization': 'Bearer ' + TOKEN,
-              'Content-Type': 'multipart/form-data',
-            },
-            body: formData,
-          })
-          console.log('party create data : ', response);
-          /*const response = await handleGetPartyInfo(t);
-          console.log('party data : ', response);*/
-          //await loadID();
-        } else {
-          console.log('실패.  ');
-        }
 
     };
-    console.log('calendar effect');
     initialize();
   }, []);
 
+
   const [items, setItems] = React.useState({});
-  const loadItems = (day) => {
 
+  const getDayString = (dayOfWeek) => {
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return days[dayOfWeek];
+  };
+
+  const loadItems = async (month) => {
+    const t = await getToken();
+    await handleGetPartyInfo(t);
+    //dumi
+    const d = {
+                  alarmFrequency: "월,화,",
+                  alarmTime: "20:20:20",
+                  description: "",
+                  endAt: "2023-05-24T21:12:12",
+                  groupName: "test2",
+                  groupType: "운동",
+                  location: "온라",
+                  max: 7,
+                  members: [
+                           {
+                           authorities: [[Object]],
+                           name: "pineapple",
+                           profile: "data:",
+                           "tokens": {
+                                                      "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MjAsImlhdCI6MTY4NDU2OTExNSwiZXhwIjoxNjg2MDQwMzQ0fQ.K5044LsArJwtdFJWRzvnSQ6t-22jyOGa_5Pts6ErfxY",
+                                                      "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2ODQ1NjkxMTUsImV4cCI6MTY4NjA0MDM0NH0.tnV26gIWu20aM1N-Mk2Xt6G-fKJ1mDFq0hqLfbzDSJA",
+                           "userId": 4},
+                           "userId": 4},
+
+                           {"authorities": [[Object]],
+                           "name": "strawberry",
+                           "profile": "data:image/png;base64,iV",
+                           "tokens": {
+                           "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MjAsImlhdCI6MTY4NDU2OTExNSwiZXhwIjoxNjg2MDQwMzQ0fQ.K5044LsArJwtdFJWRzvnSQ6t-22jyOGa_5Pts6ErfxY",
+                           "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2ODQ1NjkxMTUsImV4cCI6MTY4NjA0MDM0NH0.tnV26gIWu20aM1N-Mk2Xt6G-fKJ1mDFq0hqLfbzDSJA",
+                           "userId": 20}, "userId": 20}],
+
+                  ownerId: 2, "partyId": 14,
+                  partyImg: "https://cdn.mhnse.com/news/photo/202212/160103_155186_4151.jpg",
+                  startAt: "2023-04-24T21:12:12"
+
+    }
+    partyInfo.push(d);
+    //dumi
+    //await handleGetPartyInfoByNum();
+    console.log('whole party : ', partyInfo);
     setTimeout(() => {
-      for (let i = -15; i < 85; i++) {
-        const time = day.timestamp + i * 24 * 60 * 60 * 1000;
-        const strTime = timeToString(time);
+      for(let i = 0; i < partyInfo.length; i++) {
+        console.log('party  ',i, ': ',  partyInfo[i]);
+        const startDate = new Date(partyInfo[i].startAt);
+        const endDate = new Date(dumiEndAt);  // endAt 이 startAt과 같은 관계로 dumiEndAt을 임시로 사용
 
-        /*const times = ['2023-05-11', '2023-05-13'];
+        // 요일을 배열로 분리합니다.
+        const alarmDays = partyInfo[i].alarmFrequency.split(',');
 
-        for (let i = 0; i < times.length; i++) {
-          const key = times[i];
-          if (!items[key])
-            items[key] = [];
-        }
+        const currentDate = new Date(startDate);
 
-        items['2023-05-11'] = [];
-        items['2023-05-13'] = [];
-        items['2023-05-11'].push({
-          day: '11',
-          name: '모닝콜',
-          time: '07:00',
-          location: '온라인',
-          height: Math.max(10, Math.floor(Math.random() * 150)),
-        })
-        items['2023-05-13'].push({
-          day: '13',
-          name: '캡스톤 회의',
-          time: '22:00',
-          location: '기흥역',
-          height: Math.max(10, Math.floor(Math.random() * 150)),
-        })*/
-        if (!items[strTime]) {
-          items[strTime] = [];
+        while (currentDate <= endDate) {
+          const dayOfWeek = currentDate.getDay();
+          const currentMonth = currentDate.getMonth() + 1;
+          const strDate = dateToString(currentDate);
+          if(!items[strDate]) {  //원래 여러 개 겹치는 게 가능해야함.
+            items[strDate] = [];
+          }
+          if (alarmDays.includes(getDayString(dayOfWeek))
+              && currentMonth === month.month)
+          {
+            const obj = {
+              name: partyInfo[i].groupName,
+              height: Math.max(10, Math.floor(Math.random() * 150)),
+              day: strDate,
+              time: partyInfo[i].alarmTime,
+              location: partyInfo[i].location,
+              members: partyInfo[i].members,
+              partyNum: i,
+            }
+            let shouldPush = true; // push 여부를 나타내는 변수
+            for (let j = 0; j < items[strDate].length; j++) {
+              //console.log('per strData : ', items[strDate])
+              if (items[strDate][j].partyNum === i) {
+                shouldPush = false; // 조건을 만족하는 객체가 있으면 push 하지 않음
+                break;
+              }
+            }
+            if(shouldPush) {
+              items[strDate].push(obj);
+            }
+          }
 
-          const numItems = Math.floor(Math.random() * 3 + 1);
-
-          items[strTime].push({
-            name: 'Item for ' + strTime,
-            height: Math.max(10, Math.floor(Math.random() * 150)),
-            day: strTime,
-            time: '10:00',
-            location: 'online',
-          });
+          // 다음 날로 이동합니다.
+          currentDate.setDate(currentDate.getDate() + 1);
         }
       }
 
@@ -162,18 +211,25 @@ const MyCalendar = () => {
       });
       setItems(newItems);
     }, 1000);
+    console.log('Items : ', items);
   }
-  const itemPress = (day, name) => {
+
+  const [perDay, setPerDay] = useState(null);
+  const [perName, setPerName] = useState(null);
+  const [perMembers, setPerMembers] = useState(null);
+  const itemPress = (day, name, members) => {
+    setPerDay(day);
+    setPerName(name);
+    setPerMembers(members);
     setModalVisible(true);
-    setModalDay(day);
-    setModalName(name);
-    console.log('item pressed');
+
+    console.log('item pressed, members : ', perMembers);
   }
 
   const renderItem = (item) => {
     return (
         <View style={{alignItems: 'center'}}>
-          <TouchableOpacity style={[calStyles.item]} onPress={() => itemPress(item.day, item.name)}>
+          <TouchableOpacity style={[calStyles.item]} onPress={() => itemPress(item.day, item.name, item.members)}>
                 <View style={[calStyles.scheduleItem, {flex: 0.2}]}>
                   <View style={calStyles.dateView}>
                     <Text style={{fontSize: 25, color: 'black', fontWeight: 'bold'}}>
@@ -190,6 +246,25 @@ const MyCalendar = () => {
         </View>
     );
   }
+  const renderEmptyData = () => {
+    return (
+        <View style={{alignItems: 'center'}}>
+          <View style={[calStyles.item]}>
+            <View style={[{flex: 0.2}]}>
+              <View style={calStyles.scheduler}>
+                <Image source={require('../../images/Emoji.png')}></Image>
+                <View style={{ height: 7 }} />
+                <Text style={{fontSize: 20, color: 'rgba(164, 49, 49, 1)', fontWeight: 'bold'}}>
+                  지금은 저장된 일정이 없어요.
+                </Text>
+                <View style={{ height: 10 }} />
+              </View>
+            </View>
+          </View>
+        </View>
+    );
+  };
+
   const renderDay = (day, item) => {
     return null; // 날짜 표시를 제거하고 아무 내용도 반환하지 않음
   };
@@ -212,9 +287,11 @@ const MyCalendar = () => {
     return month;
   };
   const getPerDay = (dateString) =>{
-    //return dateString.split('-')[2];
+    const d = new Date(dateString)
+    return d.getDate();
   }
   const markedDates = {};
+
   if (selectedDate) {
     markedDates[selectedDate] = { selected: true,
       selectedColor: 'rgba(223, 165, 165, 01.0)',
@@ -242,30 +319,24 @@ const MyCalendar = () => {
         renderDay={renderDay}
         onDayPress={handleSelectDate}
         markedDates={markedDates}
+        renderEmptyData={renderEmptyData}
         theme={{
           selectedDayBackgroundColor: '#FFFFFF',
         }}
-        //renderHeader={renderHead
       />
-      {/*<StatusBar />*/}
       <Modal visible={modalVisible} animationType="slide"
              onRequestClose={closeModal}
              style={[ { zIndex: 9999, flex: 1 }]}
       >
         <View>
           <View style={{flexDirection: 'row', marginLeft: 20, marginTop: 10}}>
-            <Text style={[calStyles.hugeText, {color: 'rgba(164, 49, 49, 1)',}]}>{getDayOfWeek(modalDay)}, </Text>
-            <Text style={calStyles.hugeText}>{getPerDay(modalDay)} </Text>
-            <Text style={calStyles.hugeText}>{getMonth(modalDay)}</Text>
+            <Text style={[calStyles.hugeText, {color: 'rgba(164, 49, 49, 1)',}]}>{getDayOfWeek(perDay)}, </Text>
+            <Text style={calStyles.hugeText}>{getPerDay(perDay)} </Text>
+            <Text style={calStyles.hugeText}>{getMonth(perDay)}</Text>
           </View>
-          <Text style={styles.bigText}>{modalName}</Text>
+          <Text style={styles.bigText}>{perName}</Text>
         </View>
-        <AlarmView data={data} />
-        <View>
-          <TouchableOpacity onPress={closeModal}>
-            <Text>닫기</Text>
-          </TouchableOpacity>
-        </View>
+        <AlarmView members={perMembers} />
       </Modal>
     </View>
   );

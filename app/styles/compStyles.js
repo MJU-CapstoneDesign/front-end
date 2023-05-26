@@ -4,7 +4,7 @@ export const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'rgba(200, 200, 200, 0.50)',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         paddingVertical: 30,
     },
@@ -28,12 +28,14 @@ export const styles = StyleSheet.create({
         height: 125,
         backgroundColor: 'white',
         borderRadius: 10,
+        marginTop: 20,
     },
     box4: {
         width: 338,
         height: 210,
         backgroundColor: 'white',
         borderRadius: 10,
+        marginTop: 20,
     },
 
 
@@ -180,6 +182,14 @@ export const calStyles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: 'white',
     },
+    scheduler: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        height: 120,
+        backgroundColor: 'white',
+    },
     dateView: {
         width: 50,
         height: 50,
@@ -188,7 +198,13 @@ export const calStyles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 10,
     },
-
+    noItemQuote: {
+        width: '100%',
+        height: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+    },
     scheduleContent: {
         flexDirection: 'column',
         marginLeft: 20,

@@ -6,7 +6,7 @@ import {
     TextInput, Alert,
 } from 'react-native';
 import styled from "styled-components/native";
-import styles from '../../styles/compStyles';
+import {styles} from '../../styles/compStyles';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const URL = 'http://danram-api.duckdns.org:8080';
 
@@ -43,16 +43,6 @@ const handleDeleteMember = async () => {
     }).catch(error => {
         console.error('delete fail: ', error);
     });
-        /*.then(data => {
-            console.log('quit data : ', data)
-        })
-        .then(data => data.json())
-        .then(data => {
-            console.log('delete success: ', data);
-        })
-        .catch(error => {
-            console.error('delete fail: ', error);
-        });*/
 };
 
 export default function Quit({navigation, route}) {
@@ -72,7 +62,7 @@ export default function Quit({navigation, route}) {
             navigation.navigate('Page');
         }
     };
-
+    //jwtDelete();
     return(
         <View style={styles.subContainer}>
 

@@ -6,7 +6,7 @@ import {
     TextInput, Alert
 } from 'react-native';
 import styled from "styled-components/native";
-import styles from '../../styles/compStyles';
+import {styles} from '../../styles/compStyles';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const URL = 'http://danram-api.duckdns.org:8080';
 
@@ -20,9 +20,11 @@ const getToken = async () => {
         return null;
     }
 }
+
 export default function Nickname({navigation, route}) {
     const [str, myChangeText] = React.useState('');
-    var INFO = route.params;
+    /*var*/
+    let INFO = route.params;
     console.log('nickname, information name : ', INFO.name);
 
     const handleChangeNickname = async (NAME) => {

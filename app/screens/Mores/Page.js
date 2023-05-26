@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Text,
     View, Image,
     TouchableOpacity,
-    Modal
+    Modal, Platform
 } from 'react-native';
 import {styles} from '../../styles/compStyles';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
+import {launchImageLibrary} from "react-native-image-picker";
+import storage from "@react-native-firebase/storage";
 
 let ImagePicker = require('react-native-image-picker');
 const URL = 'http://danram-api.duckdns.org:8080';
@@ -16,11 +18,17 @@ const URL = 'http://danram-api.duckdns.org:8080';
 export default function Page({ navigation}) {
     const [profile, setProfile] = useState(null);
     const [name, setName] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [response, setResponse] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [firebaseUri, setFirebaseUri] = useState(null);
+
     let info;
     const getToken = async () => {
         try{
             const value = await AsyncStorage.getItem('jwts');
             const data = JSON.parse(value);
+            console.log('jwt is ', data);
             return data.accessToken;
         }catch (error) {
             console.log('JWT 토큰을 검색하는 동안 오류가 발생:', error);
@@ -50,6 +58,7 @@ export default function Page({ navigation}) {
         //const savedID = await getSavedID();
         const NAME = info.name;
         const PROFILE = info.profile;
+        console.log('member id', info.userId);
         if(NAME !== null) {
             setName(NAME);
             setProfile(PROFILE);
@@ -59,61 +68,120 @@ export default function Page({ navigation}) {
             setName('name');
         }
     }
-    useFocusEffect(()=>{
-        const initialize = async () => {
-            try {
-                const t = await getToken();
-                if (t !== null) {
-                    await handleGetMyInfo(t);
-                    console.log('handled');
-                    await loadID();
-                } else {
-                    console.log('저장된 JWT 토큰이 없습니다.');
-                }
-            } catch (error) {
-                console.log('JWT 토큰을 검색하는 동안 오류가 발생했습니다:', error);
+    const initialize = async () => {
+        try {
+            const t = await getToken();
+            if (t !== null) {
+                await handleGetMyInfo(t);
+                console.log('handled');
+                await loadID();
+            } else {
+                console.log('저장된 JWT 토큰이 없습니다.');
             }
-        };
+        } catch (error) {
+            console.log('JWT 토큰을 검색하는 동안 오류가 발생했습니다:', error);
+        }
+    };
 
+    useFocusEffect(()=>{
+        console.log('useFocusEffect called');
         initialize();
 
         const unsubscribe = navigation.addListener('focus', initialize);
         return unsubscribe;
     })
 
-    const handleUploadProfileImage = async (newProfile) => {
-        console.log('imagefile in handle : ', newProfile);
-        // 프로필 사진 업로드 로직 구현
-        const t = await getToken();
+    useEffect(() => {
+        const profileResponce = async () =>{
+            if (response !== null) {
+                await imageUpload();
+                //await initialize();
+            }
+        }
+        profileResponce();
+    }, [response]);
 
-        /*const formData = new FormData();
-        formData.append('profileImage', {
-            uri: newProfile,
-            type: 'image/jpeg',
-            name: 'profile.jpg',
-        });*/
-        // API 요청: POST /member/profile/img
-        await fetch(URL + '/member/profile/img', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + t,
-                'Content-Type': 'application/json',
-                //'Content-Disposition': `attachment; filename=` + newProfile,
+    useEffect(()=>{
+        console.log('the firebase uri: ', firebaseUri);
+        const profileChange = async  () =>{
+            if(firebaseUri !== null) {
+                await handleProfileMember();
+                await initialize();
+            }
+        }
+        profileChange();
+    },[firebaseUri]);
+
+    const onSelectImage = () => {
+        launchImageLibrary(
+            {
+                mediaType: 'photo',
+                maxWidth: 512,
+                maxHeight: 512,
+                includeBase64: Platform.OS === 'android',
             },
-            body: JSON.stringify(newProfile),
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Profile upload success : ' + JSON.stringify(data));
-            })
-            .catch(error => {
-                // 오류 처리
-                console.error('Profile upload failed : ', error);
-            });
+            (res) => {
+                if (res.didCancel) return;
+                setResponse(res);
+            },
+        );
     };
 
 
-    const [showModal, setShowModal] = useState(false);
+    const imageUpload = async () => {
+        setLoading(true);
+        let imageUrl = null;
+        if (response) {
+            const asset = response.assets[0];
+            const reference = storage().ref(`/profile/${asset.fileName}`); // 업로드할 경로 지정
+            if (Platform.OS === 'android') { // 안드로이드
+                // 파일 업로드
+                await reference.putString(asset.base64, 'base64', {
+                    contentType: asset.type
+                });
+            } else { // iOS
+                // 파일 업로드
+                await reference.putFile(asset.uri);
+            }
+            imageUrl = response ? await reference.getDownloadURL() : null;
+        }
+        setFirebaseUri(imageUrl);
+        console.log('imageUrl  ', imageUrl);
+        // imageUrl 사용 로직 ...
+    };
+    const handleProfileMember = async () => {
+
+        console.log('fire uri confirm : ', firebaseUri, ' type : ', typeof firebaseUri);
+        const TOKEN = await getToken();
+
+        await fetch(URL + '/member/profile/img',{
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + TOKEN,
+                'Content-Type': 'application/json',
+                //"Content-Type": "multipart/form-data",
+            },
+            /*body: JSON.stringify({
+                img: firebaseUri,
+            }),*/
+            body: firebaseUri,
+        })
+            .then(response => response.json())
+            .then(data => {
+                // 응답 데이터 처리
+                console.log('profile changing :  ', data);
+            })
+            .catch(error => {
+                // 에러 처리
+                console.error('profile fail : ',error);
+            });
+    }
+    const nickSetPress = () => {
+        navigation.navigate('Nickname', info);
+    }
+    const quitPress = () => {
+        navigation.navigate('Quit', info);
+    }
 
     const handlePress = () => {
         setShowModal(true);
@@ -123,43 +191,7 @@ export default function Page({ navigation}) {
         setShowModal(false);
     };
 
-    const handleImagePicker = () => {
-        const options = {
-            mediaType: 'photo',
-            //includeBase64: true,
-        };
-        ImagePicker.launchImageLibrary(options, (response) => {
-            if (response.didCancel) {
-                console.log('User cancelled image picker');
-            } else if (response.error) {
-                console.log('ImagePicker Error: ', response.error);
-            } else {
-                console.log('image response :', response);
-                const imageData = response.assets[0].uri;
-                const filename = imageData.substring(imageData.lastIndexOf('/') + 1);
-
-                console.log('image base64 :', filename);
-
-                handleUploadProfileImage(filename)
-                    .then(()=> handleGetMyInfo())
-                    .then(()=>loadID())
-                    .then(()=>{
-                        console.log('Saved name:  ', name);
-                    });
-            }
-        });
-    };
-
-    const nickSetPress = () => {
-        navigation.navigate('Nickname', info);
-    }
-    const quitPress = () => {
-        navigation.navigate('Quit', info);
-    }
-
-    //jwtDelete();
-    //handleGetMyInfo();
-
+    console.log('prof : ', profile);
     return (
         <View style={styles.container}>
 
@@ -168,13 +200,7 @@ export default function Page({ navigation}) {
                 <View style={styles.touchable}>
                     <View style={{
                         width: 70, height: 70, marginLeft: 10,}}>
-                        {
-                            profile !== undefined ? (
-                                <Image source={{ uri: profile }} style={styles.image}/>
-                            ) : (
-                                <Image source={require("../../image/profile.jpg")}></Image>
-                            )
-                        }
+                        {profile && <Image source={{ uri: profile }} style={styles.image}/>}
                     </View>
                     <Modal
                         visible={showModal}
@@ -184,7 +210,7 @@ export default function Page({ navigation}) {
                     >
                         <View style={styles.modalContainer}>
                             <View style={styles.modalContent}>
-                                <TouchableOpacity onPress={handleImagePicker}>
+                                <TouchableOpacity onPress={onSelectImage}>
                                     <Text>Change Image</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleModalClose}>

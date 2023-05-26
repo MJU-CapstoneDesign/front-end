@@ -1,7 +1,7 @@
 import React from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Feed from "../screens/Home/Feed";
+import Feed from "../screens/Feed";
 import Chatting from "../screens/Home/Chatting";
 import { View, TouchableOpacity } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
