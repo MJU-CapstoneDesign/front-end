@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Location from "react-native-vector-icons/Ionicons";
 import People from "react-native-vector-icons/MaterialIcons";
 import { partyApi } from "../../api";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useQueryClient, useQuery } from "react-query";
 import Loader from "../../components/Loader";
 import {
@@ -16,6 +16,7 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { TouchableOpacity } from "react-native";
+import FeedTabs from "../../navigation/FeedTab";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -146,64 +147,145 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  board: {
+    backgroundColor: "#F3E4E4",
+  },
 });
 
-function ListItem({ item }) {
-  return (
-    <Content>
-      <TouchableOpacity>
-        <Board>
-          <ImageContainer>
-            <Image source={item.src} />
-          </ImageContainer>
-        </Board>
-      </TouchableOpacity>
-      <CategoryTitle>{item.title}</CategoryTitle>
-    </Content>
-  );
-}
-
-function RenderGroup({ item }) {
-  return (
-    <GContent>
-      <GBoard>
-        <ProfileContainer>
-          <Image
-            source={{ uri: item.partyImg }}
-            style={{ width: 80, height: 70 }}
-          />
-        </ProfileContainer>
-        <Column>
-          <GroupTitle>{item.groupName}</GroupTitle>
-          <Row>
-            <Icon name="calendar-range-outline" size={18} />
-            <DateText>{item.startAt}</DateText>
-            <PBoard>
-              <WeekText>{item.alarmFrequency}</WeekText>
-            </PBoard>
-          </Row>
-          <Row>
-            <Location name="location-outline" size={18} />
-            <LocationText>{item.location}</LocationText>
-          </Row>
-          <Row>
-            <People name="people-alt" size={18} />
-            <NumofPerson>
-              {item.ownerId}/{item.max}
-            </NumofPerson>
-          </Row>
-        </Column>
-        <Absolute>
-          <TagText>{item.groupType}</TagText>
-        </Absolute>
-      </GBoard>
-    </GContent>
-  );
-}
-
 function Meeting({ navigation, token }) {
-  // const { token } = route.params;
-  //console.log("Meeing: " + token);
+
+  //날짜 필터링
+  const [date, setDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  //선택한 카테고리
+  const [selectedCategory, setSelectedCategory] = useState("전체");
+
+  //주 횟수 설정
+  const [frequency, setFrequency] = useState("");
+
+  //partyId 
+
+  const [partyId, setPartyId] = useState(null);
+
+  //flatlist 카테고리 render
+  function ListItem({ item }) {
+    const handleCategory = () => {
+      if (item.title == selectedCategory) {
+        setSelectedCategory("전체");
+      } else {
+        setSelectedCategory(item.title);
+      }
+    };
+
+    return (
+      <Content>
+        <TouchableOpacity onPress={handleCategory} style>
+          <Board
+            style={[item.title === selectedCategory ? styles.board : null]}
+          >
+            <ImageContainer>
+              <Image source={item.src} />
+            </ImageContainer>
+          </Board>
+        </TouchableOpacity>
+        <CategoryTitle>{item.title}</CategoryTitle>
+      </Content>
+    );
+  }
+
+  //flatlist 파티 데이터 render
+  function RenderGroup({ item }) {
+    //주 횟수 필터링
+    str = item.alarmFrequency;
+    const filteredStr = str.split("").filter((char) => {
+      return char >= "가" && char <= "힣";
+    });
+    const count = filteredStr.length;
+
+    //시작일, 종료일 필터링
+    // const formattedDate = moment(date).format('L');
+    // setDate(date);
+    
+
+    if (selectedCategory == "전체") {
+      return (
+        <GContent>
+          <GBoard>
+            <ProfileContainer>
+              <Image
+                source={{ uri: item.partyImg }}
+                style={{ width: 80, height: 70, borderRadius: 10 }}
+              />
+            </ProfileContainer>
+            <Column>
+              <GroupTitle>{item.groupName}</GroupTitle>
+              <Row>
+                <Icon name="calendar-range-outline" size={18} />
+                <DateText>{item.startAt}</DateText>
+                <PBoard>
+                  <WeekText>주 {count}일</WeekText>
+                </PBoard>
+              </Row>
+              <Row>
+                <Location name="location-outline" size={18} />
+                <LocationText>{item.location}</LocationText>
+              </Row>
+              <Row>
+                <People name="people-alt" size={18} />
+                <NumofPerson>
+                  {item.ownerId}/{item.max}
+                </NumofPerson>
+              </Row>
+            </Column>
+            <Absolute>
+              <TagText>{item.groupType}</TagText>
+            </Absolute>
+          </GBoard>
+        </GContent>
+      );
+    } else {
+      if (item.groupType == selectedCategory) {
+        return (
+          <GContent>
+            <GBoard>
+              <ProfileContainer>
+                <Image
+                  source={{ uri: item.partyImg }}
+                  style={{ width: 80, height: 70, borderRadius: 10 }}
+                />
+              </ProfileContainer>
+              <Column>
+                <GroupTitle>{item.groupName}</GroupTitle>
+                <Row>
+                  <Icon name="calendar-range-outline" size={18} />
+                  <DateText>{item.startAt}</DateText>
+                  <PBoard>
+                    <WeekText>주 {count}일</WeekText>
+                  </PBoard>
+                </Row>
+                <Row>
+                  <Location name="location-outline" size={18} />
+                  <LocationText>{item.location}</LocationText>
+                </Row>
+                <Row>
+                  <People name="people-alt" size={18} />
+                  <NumofPerson>
+                    {item.ownerId}/{item.max}
+                  </NumofPerson>
+                </Row>
+              </Column>
+              <Absolute>
+                <TagText>{item.groupType}</TagText>
+              </Absolute>
+            </GBoard>
+          </GContent>
+        );
+      } else {
+        return null;
+      }
+    }
+  }
 
   const queryClient = useQueryClient();
 
@@ -237,17 +319,25 @@ function Meeting({ navigation, token }) {
         <FlatList
           numColumns={5}
           data={Category}
+          keyExtractor={(item) => item.title}
           renderItem={ListItem}
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={separator}
           contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}
         />
-
         <FlatList
           horizontal={false}
+          // data={selectedCategory ? partyInfoData.filter(item => item.groupType === selectedCategory) : partyInfoData}
           data={partyInfoData}
           renderItem={({ item }) => (
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                //console.log(partyId);
+                setPartyId(item.partyId);
+                navigation.navigate("AddStack" ,{screen:"FeedTabs"});
+              }}
+              
+            >
               <RenderGroup item={item} />
             </TouchableOpacity>
           )}

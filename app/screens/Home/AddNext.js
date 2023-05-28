@@ -2,14 +2,14 @@ import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import { Entypo, Ionicons, Feather } from "@expo/vector-icons";
 import styled from "styled-components";
 import { SafeAreaView } from "react-native-safe-area-context";
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import Timer from "../../components/Timer";
 import Frequency from "../../components/Frequency";
 import HomeBottomTabs from "../../navigation/HomeBottomTabs";
 import { TokenContext } from "./TokenContext";
 import { URL } from "../../api";
+import messaging from '@react-native-firebase/messaging';
 
-console.log(URL);
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const TopTap = styled.View`
@@ -76,7 +76,8 @@ function AddNext({ navigation, route }) {
   const { token } = useContext(TokenContext);
 
   //Add.js에서 넘겨온 parameter
-  const { value, name, introduce, num, start, end, location, imgUrl } = route.params;
+  const { value, name, introduce, num, start, end, location, imgUrl } =
+    route.params;
 
   // 이미지 스테이트
   const [selectedImage, setSelectedImage] = useState(null);
@@ -105,35 +106,59 @@ function AddNext({ navigation, route }) {
     console.log("AddNext: " + value);
   };
 
+  //생성된 파티 아이디
+  const [partyId, setPartyId] = useState(null);
+
+  //FCM topic
+  const subscribe = useCallback(() => {
+    messaging()
+      .subscribeToTopic(partyId) // partyId를 사용하여 FCM topic 구독
+      .then(() => {
+        console.log(`파티 ${partyId} 구독 성공!!`);
+      })
+      .catch(() => {
+        console.log(`파티 ${partyId} 구독 실패!`);
+      });
+  }, [partyId]);
 
   //api 호출 함수
   const sendDataToServer = () => {
-      fetch(`${URL}/party/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          alarmFrequency: frequency.join(","),
-          alarmTime: `${hour}:${min}:00`,
-          description: introduce,
-          endAt: "2023-04-24T21:12:12",
-          groupName: name,
-          groupType: value,
-          location: location,
-          max: parseInt(num),
-          partyImg: imgUrl,
-          startAt: "2023-04-24T21:12:12",
-        }),
-      })
-        .then((response) => {
-          console.log("서버 응답: ", response);
-        })
-        .catch((error) => {
-          console.log("에러 발생: ", error);
-        });
-        navigation.navigate("HomeFeedStack", { screen: "Home" });
+    fetch(`${URL}/party/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        alarmFrequency: frequency.join(","),
+        alarmTime: `${hour}:${min}:00`,
+        description: introduce,
+        endAt: "2023-04-24T21:12:12",
+        // groupName: name,
+        // groupType: value,
+        groupName:"르세라핌",
+        groupType:"운동",
+        location: location,
+        max: parseInt(num),
+        partyImg: "1",
+        startAt: "2023-04-24T21:12:12",
+      }),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.partyId) {
+        console.log(data.partyId);
+        console.log(data.userId);
+        setPartyId(data.partyId);
+        subscribe(); // FCM topic 구독 함수 호출
+      } else {
+        console.log("파티 ID가 유효하지 않습니다.");
+      }
+    })
+      .catch((error) => {
+        console.log("에러 발생: ", error);
+      });
+    navigation.navigate("HomeFeedStack", { screen: "Home" });
   };
 
   return (
