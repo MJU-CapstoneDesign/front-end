@@ -34,7 +34,7 @@ const MyCalendar = () => {
   // partyInfo는 여러 파티가 들었다.
   let partyInfo = null;
 
-  const dumiEndAt = "2023-05-24T21:12:12";
+  //const dumiEndAt = "2023-05-24T21:12:12";
   const closeModal = () => {
     setModalVisible(false);
     console.log('close call');
@@ -43,25 +43,7 @@ const MyCalendar = () => {
     else
       console.log('its false');
   };
-  let myNum;
-  const handleGetMyInfo = async () => {
-    const TOKEN = await getToken();
-    await fetch(URL + '/member/info', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer ' + TOKEN,
-        'Content-Type': 'application/json',
-      },
-    })
-        .then(data => data.json())
-        .then(data => {
-          console.log('response success:' + data + 'is data');
-          myNum = data.name;
-        })
-        .catch(error => {
-          console.error('Failed : ' + error);
-        });
-  };
+
   const handleGetPartyInfo = async (TOKEN) => {
     const response = await fetch(URL + '/party/myInfo', {
       method: 'GET',
@@ -79,26 +61,7 @@ const MyCalendar = () => {
           console.error('Failed : ' + error);
         });
   };
-  const handleGetPartyInfoByNum = async () => {
-    const TOKEN = await getToken();
-    await handleGetMyInfo();
 
-    const response = await fetch(URL + '/party/info/user/' + myNum, {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer ' + TOKEN,
-        'Content-Type': 'application/json',
-      },
-    })
-        .then(data => data.json())
-        .then(data => {
-          partyInfo = data;
-          console.log('call party by num : ', data);
-        })
-        .catch(error => {
-          console.error('Failed by num : ' + error);
-        });
-  }
 
   useEffect(()=>{
     const initialize = async () => {
@@ -119,49 +82,14 @@ const MyCalendar = () => {
   const loadItems = async (month) => {
     const t = await getToken();
     await handleGetPartyInfo(t);
-    //dumi
-    const d = {
-                  alarmFrequency: "월,화,",
-                  alarmTime: "20:20:20",
-                  description: "",
-                  endAt: "2023-05-24T21:12:12",
-                  groupName: "test2",
-                  groupType: "운동",
-                  location: "온라",
-                  max: 7,
-                  members: [
-                           {
-                           authorities: [[Object]],
-                           name: "pineapple",
-                           profile: "data:",
-                           "tokens": {
-                                                      "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MjAsImlhdCI6MTY4NDU2OTExNSwiZXhwIjoxNjg2MDQwMzQ0fQ.K5044LsArJwtdFJWRzvnSQ6t-22jyOGa_5Pts6ErfxY",
-                                                      "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2ODQ1NjkxMTUsImV4cCI6MTY4NjA0MDM0NH0.tnV26gIWu20aM1N-Mk2Xt6G-fKJ1mDFq0hqLfbzDSJA",
-                           "userId": 4},
-                           "userId": 4},
 
-                           {"authorities": [[Object]],
-                           "name": "strawberry",
-                           "profile": "data:image/png;base64,iV",
-                           "tokens": {
-                           "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MjAsImlhdCI6MTY4NDU2OTExNSwiZXhwIjoxNjg2MDQwMzQ0fQ.K5044LsArJwtdFJWRzvnSQ6t-22jyOGa_5Pts6ErfxY",
-                           "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2ODQ1NjkxMTUsImV4cCI6MTY4NjA0MDM0NH0.tnV26gIWu20aM1N-Mk2Xt6G-fKJ1mDFq0hqLfbzDSJA",
-                           "userId": 20}, "userId": 20}],
-
-                  ownerId: 2, "partyId": 14,
-                  partyImg: "https://cdn.mhnse.com/news/photo/202212/160103_155186_4151.jpg",
-                  startAt: "2023-04-24T21:12:12"
-
-    }
-    partyInfo.push(d);
-    //dumi
     //await handleGetPartyInfoByNum();
     console.log('whole party : ', partyInfo);
     setTimeout(() => {
       for(let i = 0; i < partyInfo.length; i++) {
         console.log('party  ',i, ': ',  partyInfo[i]);
         const startDate = new Date(partyInfo[i].startAt);
-        const endDate = new Date(dumiEndAt);  // endAt 이 startAt과 같은 관계로 dumiEndAt을 임시로 사용
+        const endDate = new Date(partyInfo[i].endAt);  // endAt 이 startAt과 같은 관계로 dumiEndAt을 임시로 사용
 
         // 요일을 배열로 분리합니다.
         const alarmDays = partyInfo[i].alarmFrequency.split(',');
