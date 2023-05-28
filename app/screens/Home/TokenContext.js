@@ -4,6 +4,7 @@ const TokenContext = React.createContext();
 
 function TokenProvider({ children }) {
   const [token, setTokenContext] = useState(null);
+  console.log(token);
 
   return (
     <TokenContext.Provider

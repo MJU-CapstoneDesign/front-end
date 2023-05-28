@@ -1,19 +1,206 @@
-import React from 'react';
+import { Text, Image, StyleSheet, View, Dimensions } from "react-native";
 import styled from 'styled-components/native';
+import { partyApi } from "../../api";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Location from "react-native-vector-icons/Ionicons";
+import People from "react-native-vector-icons/MaterialIcons";
+import React, { useContext, useEffect, useState } from "react";
+import { useQueryClient, useQuery } from "react-query";
+import Loader from "../../components/Loader";
+import { TokenContext } from "./TokenContext";
+import {
+  RefreshControl,
+  ScrollView,
+  FlatList,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
+
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const Container = styled.View`
   flex: 1;
-  background-color: #fff;
+  
   align-items: center;
   justify-content: center;
 `;
 
+const GContent = styled.View`
+  flex-direction: column;
+  margin-top: 20px;
+  //background-color: beige;
+  align-items: center;
+`;
+
+const GBoard = styled.View`
+  width: ${SCREEN_WIDTH * 0.9}px;
+  height: 110px;
+  flex-direction: row;
+  border-radius: 10;
+  background-color: white;
+  //align-items:center;
+  //margin-left:10px;
+`;
+
+const ProfileContainer = styled.View`
+  width: 110px;
+  height: 100%;
+  //background-color: beige;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Column = styled.View`
+  flex-direction: column;
+  margin-top: 3px;
+  //background-color:beige;
+`;
+
+const Row = styled.View`
+  flex-direction: row;
+  margin-top: 5px;
+`;
+
+const GroupTitle = styled.Text`
+  font-size: 17px;
+  font-weight: bold;
+  margin-top: 8px;
+`;
+
+const DateText = styled.Text`
+  font-size: 12px;
+  margin-left: 5px;
+  margin-top: 1px;
+  color: #4d4d4d;
+`;
+
+const LocationText = styled(DateText)`
+  margin-top: 3px;
+`;
+
+const NumofPerson = styled(DateText)``;
+
 const MainText = styled.Text``;
 
-export default function MyMeeting() {
-	return (
+const TagText = styled.Text`
+  font-size: 15px;
+  margin-left: 170px;
+  margin-top: -30px;
+  color: #a43131;
+  font-weight: bold;
+`;
+
+const PBoard = styled.View`
+  width: 60px;
+  height: 20px;
+  border-radius: 10px;
+  background-color: #f1d7d7;
+  margin-left: 30px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const WeekText = styled.Text`
+  font-size: 14px;
+  font-weight: bold;
+`;
+
+const Absolute = styled.View`
+  position: absolute;
+  top: 100;
+  right: 10;
+`;
+export default function MyMeeting({navigation}) {
+
+	const { token } = useContext(TokenContext);
+//	console.log(token);
+	const queryClient = useQueryClient();
+
+  const {
+    isLoading: partyMyInfoLoading,
+    data: partyMyInfoData,
+    isRefetching: isRefetchingPartyMyInfo,
+  } = useQuery(["party", "partyMyInfo"], () => partyApi.partyMyInfo(token), {
+		enabled: Boolean(token)
+	});
+
+  const onRefresh = async () => {
+    queryClient.refetchQueries(["party"]);
+  };
+
+  const loading = partyMyInfoLoading;
+  const refreshing = isRefetchingPartyMyInfo;
+
+	if (!partyMyInfoData) {
+    console.log("No data");
+  }
+
+	function RenderGroup({item}){
+		 //주 횟수 필터링
+		 str = item.alarmFrequency;
+		 const filteredStr = str.split("").filter((char) => {
+			 return char >= "가" && char <= "힣";
+		 });
+		 const count = filteredStr.length;
+
+		 
+		return loading ? (
+			<Loader />
+		) : (
+			<GContent>
+				<GBoard>
+					<ProfileContainer>
+						<Image
+							source={{ uri: item.partyImg }}
+							style={{ width: 80, height: 70, borderRadius: 10 }}
+						/>
+					</ProfileContainer>
+					<Column>
+						<GroupTitle>{item.groupName}</GroupTitle>
+						<Row>
+							<Icon name="calendar-range-outline" size={18} />
+							<DateText>{item.startAt}</DateText>
+							<PBoard>
+								<WeekText>주 {count}일</WeekText>
+							</PBoard>
+						</Row>
+						<Row>
+							<Location name="location-outline" size={18} />
+							<LocationText>{item.location}</LocationText>
+						</Row>
+						<Row>
+							<People name="people-alt" size={18} />
+							<NumofPerson>
+								{item.ownerId}/{item.max}
+							</NumofPerson>
+						</Row>
+					</Column>
+					<Absolute>
+						<TagText>{item.groupType}</TagText>
+					</Absolute>
+				</GBoard>
+			</GContent>
+		);
+	}
+
+	return loading ? (
+    <Loader />
+  ) : (
+		<GestureHandlerRootView style={{ flex: 1 }}>
 		<Container>
-			<MainText>MyMeeting</MainText>
+			<FlatList
+          horizontal={false}
+          // data={selectedCategory ? partyInfoData.filter(item => item.groupType === selectedCategory) : partyInfoData}
+          data={partyMyInfoData}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+            >
+              <RenderGroup item={item} />
+            </TouchableOpacity>
+          )}
+        />
 		</Container>
+		</GestureHandlerRootView>
 	);
 }
