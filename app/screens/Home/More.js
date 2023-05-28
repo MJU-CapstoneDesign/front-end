@@ -3,8 +3,7 @@ import { Text } from "react-native";
 import { TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-
+import {createStackNavigator} from '@react-navigation/stack';
 import Page from '../Mores/Page';
 import Nickname from '../Mores/Nickname';
 import Quit from '../Mores/Quit';
@@ -37,15 +36,14 @@ export default function More() {
   
 
   return (
-    <Container>
-      <TouchableOpacity
-        onPress={async () => {
-          const data = await getToken();
-          console.log(data);
-        }}
-      >
-        <Text> 토큰 </Text>
-      </TouchableOpacity>
-    </Container>
-  );
+		<Stack.Navigator
+			tabBarOptions={{
+				showLabel: false,
+				showIcon: false,
+			}}>
+			<Stack.Screen name="Page" component={Page} />
+			<Stack.Screen name="Nickname" component={Nickname} />
+			<Stack.Screen name="Quit" component={Quit} />
+		</Stack.Navigator>
+	);
 }
