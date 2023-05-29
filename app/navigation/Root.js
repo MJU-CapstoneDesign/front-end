@@ -16,7 +16,7 @@ function Root({ token }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-      {/* <Stack.Screen name="AddStack" component={AddStack}/> */}
+      <Stack.Screen name="AddStack" component={AddStack}/>
       <Stack.Screen name="HomeFeedStack" component={HomeFeedStack} />
       <Stack.Screen name="FeedTabs" component={FeedTabs} />
       <Stack.Screen name="HomeTabs" component={HomeTabs} />

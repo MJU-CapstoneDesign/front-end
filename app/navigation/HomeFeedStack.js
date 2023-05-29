@@ -10,6 +10,7 @@ import FeedWrite from "../screens/FeedWrite";
 import { TokenContext } from "../screens/Home/TokenContext";
 import AddNext from "../screens/Home/AddNext";
 import Add from "../screens/Home/Add";
+import Calendar from "../components/Calendar";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ function HomeFeedStack({navigation}) {
       <Stack.Screen name="MyMeeting" component={MyMeeting} />
       <Stack.Screen name="AddNext" component={AddNext}/>
       <Stack.Screen name="Add" component={Add}/>
+      <Stack.Screen name="Calendar" component={Calendar}/>
       <Stack.Screen name="FeedTabs" component={FeedTabs} />
       <Stack.Screen name="Feed" component={Feed} />
       <Stack.Screen name="Chatting" component={Chatting} />

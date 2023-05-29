@@ -11,6 +11,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import HomeFeedStack from "./HomeFeedStack";
+import AddStack from "./AddStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -57,7 +58,7 @@ export default function HomeBottomTabs() {
       />
       <Tab.Screen
         name="Add"
-        component={Add}
+        component={AddStack}
         options={{
           tabBarIcon: ({ focused }) =>
             !focused ? (

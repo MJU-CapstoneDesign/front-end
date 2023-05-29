@@ -4,16 +4,18 @@ import {
   GoogleSignin,
   GoogleSigninButton,
 } from "@react-native-google-signin/google-signin";
-import { Button } from "react-native";
+import {Image, ImageBackground, StyleSheet, Text, View} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginApi } from "../../api";
 
 const Container = styled.View`
   flex: 1;
-  background-color: #fff;
+  background-color: 'rgba(242, 220, 220, 1)';
   align-items: center;
   justify-content: center;
 `;
+
+
 
 // 저장된 JWT 토큰을 검색합니다.
 const getToken = async () => {
@@ -65,26 +67,28 @@ export default function LogIn() {
   }, []);
 
   return (
-    <Container>
-      <GoogleSigninButton onPress={() => onGoogleButtonPress()} />
-      <Button
-        onPress={async () => {
-          const data = await getToken();
-          console.log(data);
-        }}
-        title="getToken"
-      />
-      <Button
-        onPress={async () => {
-          try {
-            await AsyncStorage.removeItem("jwts");
-            console.log("remove success");
-          } catch (error) {
-            console.log(error);
-          }
-        }}
-        title="remove"
-      />
-    </Container>
+      <ImageBackground source={require('../../images/Login/Body.png')} style={styles.background}>
+        <View style={styles.buttonCover}>
+          <View style={{height: 250}}></View>
+          <GoogleSigninButton onPress={() => onGoogleButtonPress()}/>
+        </View>
+      </ImageBackground>
+
   );
 }
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    resizeMode: 'cover', // 배경 이미지를 화면에 꽉 채우도록 설정합니다
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+  buttonCover: {
+    flex: 2,
+    justifyContent: 'center',
+    paddingTop: '33.33%', // 버튼 위쪽 여백
+    paddingBottom: '33.33%', // 버튼 아래쪽 여백
+  }
+});

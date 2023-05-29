@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Platform
+  Platform,
+  Button,Alert
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState, useEffect } from "react";
@@ -19,9 +20,9 @@ import { SelectList } from "react-native-dropdown-select-list";
 import { Dropdown } from "react-native-element-dropdown";
 import { launchImageLibrary } from "react-native-image-picker";
 import storage from "@react-native-firebase/storage";
+import DatePicker from "react-native-date-picker";
+import moment from "moment";
 
-// import { TouchableOpacity } from "react-native-gesture-handler";
-// import {Calendar, LocaleConfig} from 'react-native-calendars';
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const TopTap = styled.View`
@@ -68,8 +69,22 @@ const Title = styled.Text`
   margin-left: 10px;
 `;
 
+const CalendarContainer = styled.View`
+  border-radius: 5px;
+  border-width: 1px;
+  border-color: #d9d9d9;
+  width: 94px;
+  height: 26px;
+  margin-left: 10px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CalendarText = styled.Text`
+  font-size: 12px;
+`;
 const EndTitle = styled(Title)`
-  margin-left: 110px;
+  margin-left: 10px;
 `;
 
 const Hr = styled.View`
@@ -169,19 +184,22 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
   },
+  button: {
+    fontSize: 10,
+  },
 });
 
 const category = [
-  { value: "1", label: "스터디" },
-  { value: "2", label: "독서" },
-  { value: "3", label: "취미" },
-  { value: "4", label: "운동/스포츠" },
-  { value: "5", label: "문화/예술" },
-  { value: "6", label: "생활습관" },
-  { value: "7", label: "여행" },
-  { value: "8", label: "반려동물" },
-  { value: "9", label: "다이어트" },
-  { value: "10", label: "자유주제" },
+  { num: "1", label: "스터디" },
+  { num: "2", label: "독서" },
+  { num: "3", label: "취미" },
+  { num: "4", label: "운동/스포츠" },
+  { num: "5", label: "문화/예술" },
+  { num: "6", label: "생활습관" },
+  { num: "7", label: "여행" },
+  { num: "8", label: "반려동물" },
+  { num: "9", label: "다이어트" },
+  { num: "10", label: "자유주제" },
 ];
 
 const numOfPerson = [
@@ -194,11 +212,10 @@ const numOfPerson = [
   { value: "7", label: "10" },
 ];
 
-function AddClub({ navigation }) {
-  console.log("===========");
+function Add({ navigation }) {
+  console.log("==================");
   //모임 종류
   const [value, setValue] = useState(null);
-  //const [category, setCategory] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   console.log("모임 종류" + value);
 
@@ -223,6 +240,33 @@ function AddClub({ navigation }) {
   const [end, setEnd] = useState("2023-12-25T07:01:51.438Z");
   console.log("종료일:" + end);
 
+  //시작일 설정
+  const [date, setDate] = useState(new Date());
+  const [open, setOpen] = useState(false);
+  const [dateText, setDateText] = useState(null);
+
+  //종료일 설정
+  const [endDate, setEndDate] = useState(new Date());
+  const [endOpen, setEndOpen] = useState(false);
+  const [endDateText, setEndDateText] = useState(null);
+
+  //시작일 ,종료일 비교
+  const handleConfirm = (selectedDate) => {
+    setEndOpen(false);
+    setEndDate(selectedDate);
+
+    const formattedEndDate = moment(selectedDate).format('YYYY-MM-DD');
+
+    if (moment(selectedDate).isBefore(dateText)) {
+      // 선택한 날짜가 특정 날짜보다 앞선 경우 경고창 표시
+      Alert.alert('경고', '시작 날짜보다 이전의 날짜를 선택할 수 없습니다.');
+      setEndDateText(''); // endDateText를 비워줌
+    } else {
+      setEndDateText(formattedEndDate);
+    }
+  };
+
+
   //모임 장소
   const [location, setLocation] = useState(null);
   console.log("모임 장소:" + location);
@@ -244,7 +288,6 @@ function AddClub({ navigation }) {
     );
   };
 
-
   useEffect(() => {
     imageConvert();
   }, [selectedImage]);
@@ -252,10 +295,10 @@ function AddClub({ navigation }) {
   useEffect(() => {
     console.log(selectedImage);
   }, [selectedImage]);
-  
+
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [imageUri, setImageUri] = useState("1");
+  const [imageUri, setImageUri] = useState("");
 
   const imageConvert = async () => {
     setLoading(true);
@@ -314,17 +357,14 @@ function AddClub({ navigation }) {
           search
           maxHeight={300}
           labelField="label"
-          valueField="value"
+          valueField="num"
           placeholder={!isFocus ? "Select items" : "..."}
           searchPlaceholder="Search..."
-          value={value}
           autoScroll={false} //이거 줄까? 말까?
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onChange={(item) => {
             setValue(item.label);
-            //setCategory(item.label);
-            //console.log(item.label);
             setIsFocus(false);
           }}
           itemTextStyle={styles.itemTextStyle}
@@ -375,13 +415,11 @@ function AddClub({ navigation }) {
           valueField="value"
           placeholder={!isFocusNum ? "Select items" : "..."}
           searchPlaceholder="Search..."
-          value={value}
           autoScroll={false} //이거 줄까? 말까?
           onFocus={() => setIsFocusNum(true)}
           onBlur={() => setIsFocusNum(false)}
           onChange={(item) => {
             setNum(item.label);
-            //console.log(item.label);
             setIsFocusNum(false);
           }}
           itemTextStyle={styles.itemTextStyle}
@@ -399,15 +437,42 @@ function AddClub({ navigation }) {
       <Row>
         <Feather name="calendar" size={17} color="#A43131" />
         <Title>시작일</Title>
-        {/* <Calendar
-      onDayPress={day => {
-        setSelected(day.dateString);
-      }}
-      markedDates={{
-        [selected]: {selected: true, disableTouchEvent: true, selectedDotColor: 'orange'}
-      }}
-    /> */}
-        <EndTitle>~ 종료일</EndTitle>
+        <TouchableOpacity onPress={() => setOpen(true)}>
+          <CalendarContainer>
+            <DatePicker
+              modal
+              mode="date"
+              open={open}
+              date={date}
+              onConfirm={(date) => {
+                setOpen(false);
+                setDate(date);
+                const formattedDate = moment(date).format("YYYY-MM-DD");
+                setDateText(formattedDate);
+              }}
+              onCancel={() => {
+                setOpen(false);
+              }}
+            />
+            <CalendarText>{dateText}</CalendarText>
+          </CalendarContainer>
+        </TouchableOpacity>
+        <EndTitle> ~ 종료일</EndTitle>
+        <TouchableOpacity onPress={() => setEndOpen(true)}>
+          <CalendarContainer>
+            <DatePicker
+              modal
+              mode="date"
+              open={endOpen}
+              date={endDate}
+              onConfirm={handleConfirm}
+              onCancel={() => {
+                setEndOpen(false);
+              }}
+            />
+            <CalendarText>{endDateText}</CalendarText>
+          </CalendarContainer>
+        </TouchableOpacity>
       </Row>
       <Row>
         <Ionicons name="location-outline" size={17} color="#A43131" />
@@ -430,7 +495,7 @@ function AddClub({ navigation }) {
             start,
             end,
             location,
-            imageUri
+            imageUri,
           })
         }
       >
@@ -441,4 +506,4 @@ function AddClub({ navigation }) {
     </SafeAreaView>
   );
 }
-export default AddClub;
+export default Add;
