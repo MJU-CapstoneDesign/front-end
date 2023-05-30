@@ -9,6 +9,8 @@ import { partyApi } from "../../api";
 import React, { useContext, useEffect, useState } from "react";
 import { useQueryClient, useQuery } from "react-query";
 import Loader from "../../components/Loader";
+import moment from "moment";
+import 'moment/locale/ko';
 import {
   RefreshControl,
   ScrollView,
@@ -17,6 +19,7 @@ import {
 } from "react-native-gesture-handler";
 import { TouchableOpacity } from "react-native";
 import FeedTabs from "../../navigation/FeedTab";
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -133,7 +136,7 @@ const PBoard = styled.View`
   height: 20px;
   border-radius: 10px;
   background-color: #f1d7d7;
-  margin-left: 30px;
+  margin-left: 25px;
   align-items: center;
   justify-content: center;
 `;
@@ -204,8 +207,8 @@ function Meeting({ navigation, token }) {
     const count = filteredStr.length;
 
     //시작일, 종료일 필터링
-    // const formattedDate = moment(date).format('L');
-    // setDate(date);
+    const formattedDate = moment(item.startAt).format("MM/DD(dd)");
+    const formattedEndDate = moment(item.endDate).format("MM/DD(dd)");
     
 
     if (selectedCategory == "전체") {
@@ -222,7 +225,7 @@ function Meeting({ navigation, token }) {
               <GroupTitle>{item.groupName}</GroupTitle>
               <Row>
                 <Icon name="calendar-range-outline" size={18} />
-                <DateText>{item.startAt}</DateText>
+                <DateText>{formattedDate} ~ {formattedEndDate}</DateText>
                 <PBoard>
                   <WeekText>주 {count}일</WeekText>
                 </PBoard>
@@ -234,12 +237,12 @@ function Meeting({ navigation, token }) {
               <Row>
                 <People name="people-alt" size={18} />
                 <NumofPerson>
-                  {item.ownerId}/{item.max}
+                  {item.members.length}/{item.max}
                 </NumofPerson>
               </Row>
             </Column>
             <Absolute>
-              <TagText>{item.groupType}</TagText>
+              <TagText>#{item.groupType}</TagText>
             </Absolute>
           </GBoard>
         </GContent>

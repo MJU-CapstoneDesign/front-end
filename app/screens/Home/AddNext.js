@@ -8,7 +8,10 @@ import Frequency from "../../components/Frequency";
 import HomeBottomTabs from "../../navigation/HomeBottomTabs";
 import { TokenContext } from "./TokenContext";
 import { URL } from "../../api";
-import messaging from '@react-native-firebase/messaging';
+import messaging from "@react-native-firebase/messaging";
+import PushNotification from "react-native-push-notification";
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -76,8 +79,16 @@ function AddNext({ navigation, route }) {
   const { token } = useContext(TokenContext);
 
   //Add.js에서 넘겨온 parameter
-  const { value, name, introduce, num, start, end, location, imgUrl } =
-    route.params;
+  const {
+    value,
+    name,
+    introduce,
+    num,
+    dateText,
+    endDateText,
+    location,
+    imageUri,
+  } = route.params;
 
   // 이미지 스테이트
   const [selectedImage, setSelectedImage] = useState(null);
@@ -106,55 +117,85 @@ function AddNext({ navigation, route }) {
     console.log("AddNext: " + value);
   };
 
+  //알람 시간
+
   //생성된 파티 아이디
   const [partyId, setPartyId] = useState(null);
 
+  useEffect(() => {
+    subscribe(); // partyId가 변경될 때마다 subscribe 함수 호출
+    //sendScheduledNotification(); // partyId가 변경될 때마다 예약 메시지 보내기
+  }, [partyId, subscribe]);
+
   //FCM topic
   const subscribe = useCallback(() => {
-    messaging()
-      .subscribeToTopic(partyId) // partyId를 사용하여 FCM topic 구독
-      .then(() => {
-        console.log(`파티 ${partyId} 구독 성공!!`);
-      })
-      .catch(() => {
-        console.log(`파티 ${partyId} 구독 실패!`);
-      });
+    if (partyId) {
+      messaging()
+        .subscribeToTopic(`${partyId}`) // partyId를 사용하여 FCM topic 구독
+        .then(() => {
+          console.log(`파티 ${partyId} 구독 성공!!`);
+        })
+        .catch(() => {
+          console.log(`파티 ${partyId} 구독 실패!`);
+        });
+    }
   }, [partyId]);
+
+  // 예약 메시지 보내기
+  const scheduleNotification = (partyId, message, date) => {
+    PushNotificationIOS.addNotificationRequest({
+      id:"1",
+      title:message,
+      body:"hi",
+      fireDate: new Date(Date.now()), // 예약 날짜 및 시간
+    });
+    console.log("ios alarm ");
+  };
+
+  const sendScheduledNotification = () => {
+    const message = "알람 시간";
+    const date = "2023-05-29T19:00:00"; // 예약 날짜 및 시간
+
+    scheduleNotification(partyId, message, date);
+  };
 
   //api 호출 함수
   const sendDataToServer = () => {
+    const requestBody = {
+      alarmFrequency: frequency.join(","),
+      alarmTime: `${hour}:${min}:00`,
+      description: introduce,
+      endAt: `${endDateText}T21:12:12`,
+      groupName: name,
+      groupType: value,
+      location: location,
+      max: parseInt(num),
+      partyImg: imageUri,
+      startAt: `${dateText}T21:12:12`,
+    };
+
+    console.log(requestBody); // requestBody 출력
+
     fetch(`${URL}/party/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        alarmFrequency: frequency.join(","),
-        alarmTime: `${hour}:${min}:00`,
-        description: introduce,
-        endAt: "2023-04-24T21:12:12",
-        // groupName: name,
-        // groupType: value,
-        groupName:"르세라핌",
-        groupType:"운동",
-        location: location,
-        max: parseInt(num),
-        partyImg: "1",
-        startAt: "2023-04-24T21:12:12",
-      }),
+      body: JSON.stringify(requestBody),
     })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.partyId) {
-        console.log(data.partyId);
-        console.log(data.userId);
-        setPartyId(data.partyId);
-        subscribe(); // FCM topic 구독 함수 호출
-      } else {
-        console.log("파티 ID가 유효하지 않습니다.");
-      }
-    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.partyId) {
+          console.log(data.partyId);
+          console.log(data.userId);
+          setPartyId(data.partyId);
+          // 예약 메시지 보내기
+          sendScheduledNotification();
+        } else {
+          console.log("파티 ID가 유효하지 않습니다.");
+        }
+      })
       .catch((error) => {
         console.log("에러 발생: ", error);
       });
