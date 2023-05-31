@@ -5,8 +5,8 @@ import LinearGradient from "react-native-linear-gradient";
 
 const Container = styled(LinearGradient).attrs({
   colors: ["#ECC8C8", "#ECC8C8", "#ECC8C8", "#ECC8C8", "#F9DCE1", "#FDF4F5"],
-  start: { x: 0 },
-  end: { y: 1 },
+  start: { x: 0, y: 0 },
+  end: { x:0, y: 1 },
 })`
   flex: 1;
   justify-content: center;
