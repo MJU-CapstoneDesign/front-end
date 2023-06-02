@@ -6,7 +6,10 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
-  Button,Alert
+  Button,
+  Alert,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState, useEffect } from "react";
@@ -187,6 +190,9 @@ const styles = StyleSheet.create({
   button: {
     fontSize: 10,
   },
+  image: {
+    backgroundColor: "#f7e5e5",
+  },
 });
 
 const category = [
@@ -213,32 +219,24 @@ const numOfPerson = [
 ];
 
 function Add({ navigation }) {
-  console.log("==================");
+  //console.log("==================");
   //모임 종류
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
-  console.log("모임 종류" + value);
+  //console.log("모임 종류" + value);
 
   //모임 이름
   const [name, setName] = useState(null);
-  console.log("모임이름:" + name);
+  //console.log("모임이름:" + name);
 
   //모임 소개
   const [introduce, setIntroduce] = useState(null);
-  console.log("모임 소개:" + introduce);
+  //console.log("모임 소개:" + introduce);
 
   //모집 인원 수
   const [num, setNum] = useState(null);
   const [isFocusNum, setIsFocusNum] = useState(false);
-  console.log("모집 인원 수:" + num);
-
-  //시작일
-  const [start, setStart] = useState("2023-05-05T07:01:51.438Z");
-  console.log("시작일:" + start);
-
-  //종료일
-  const [end, setEnd] = useState("2023-12-25T07:01:51.438Z");
-  console.log("종료일:" + end);
+  //console.log("모집 인원 수:" + num);
 
   //시작일 설정
   const [date, setDate] = useState(new Date());
@@ -250,26 +248,26 @@ function Add({ navigation }) {
   const [endOpen, setEndOpen] = useState(false);
   const [endDateText, setEndDateText] = useState(null);
 
+
   //시작일 ,종료일 비교
   const handleConfirm = (selectedDate) => {
     setEndOpen(false);
     setEndDate(selectedDate);
 
-    const formattedEndDate = moment(selectedDate).format('YYYY-MM-DD');
+    const formattedEndDate = moment(selectedDate).format("YYYY-MM-DD");
 
     if (moment(selectedDate).isBefore(dateText)) {
       // 선택한 날짜가 특정 날짜보다 앞선 경우 경고창 표시
-      Alert.alert('경고', '시작 날짜보다 이전의 날짜를 선택할 수 없습니다.');
-      setEndDateText(''); // endDateText를 비워줌
+      Alert.alert("경고", "시작 날짜보다 이전의 날짜를 선택할 수 없습니다.");
+      setEndDateText(""); // endDateText를 비워줌
     } else {
       setEndDateText(formattedEndDate);
     }
   };
 
-
   //모임 장소
   const [location, setLocation] = useState(null);
-  console.log("모임 장소:" + location);
+  //console.log("모임 장소:" + location);
 
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -320,190 +318,210 @@ function Add({ navigation }) {
       imageUrl = response ? await reference.getDownloadURL() : null;
     }
     setImageUri(imageUrl);
-    console.log("imageUrl", imageUrl);
+    //console.log("imageUrl", imageUrl);
 
     // imageUrl 사용 로직 ...
   };
 
+  
+  //입력 유효성 validate
+  const validate = () => {
+    if ( value !== null && name !== null && introduce !== null && num !== null && dateText !== null && 
+      endDateText !== null && location !== null && imageUri !== null)
+      {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <TopTap>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={styles.container}>
+        <TopTap>
+          <TouchableOpacity
+            style={styles.back}
+            onPress={() => {
+              navigation.goBack();
+            }}
+          >
+            <Entypo name="chevron-left" size={24} color="black" />
+          </TouchableOpacity>
+          <TopTitle>모임 개설하기</TopTitle>
+        </TopTap>
+        <TouchableOpacity onPress={openImagePicker}>
+          <ImageContainer style={[selectedImage ? styles.image : null]}>
+            <FontAwesome name="camera" size={30} color="gray" />
+            <ImageTitle>사진 추가</ImageTitle>
+          </ImageContainer>
+        </TouchableOpacity>
+        <Row>
+          <Class name="category" size={17} color="#A43131" />
+          <Title>모임 종류</Title>
+          <Dropdown
+            style={[styles.dropdown, isFocus && { borderColor: "#A43131" }]}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            inputSearchStyle={styles.inputSearchStyle}
+            activeColor="#F7E5E5"
+            data={category}
+            search
+            maxHeight={300}
+            labelField="label"
+            valueField="num"
+            placeholder={!isFocus ? "Select items" : "..."}
+            searchPlaceholder="Search..."
+            autoScroll={false} //이거 줄까? 말까?
+            onFocus={() => setIsFocus(true)}
+            onBlur={() => setIsFocus(false)}
+            onChange={(item) => {
+              setValue(item.label);
+              setIsFocus(false);
+            }}
+            itemTextStyle={styles.itemTextStyle}
+            renderRightIcon={() => (
+              <Entypo
+                style={styles.icon}
+                color={isFocus ? "#A43131" : "gray"}
+                name={isFocus ? "chevron-up" : "chevron-down"}
+                size={20}
+              />
+            )}
+          />
+        </Row>
+        <Row>
+          <Name
+            name="badge-account-horizontal-outline"
+            size={17}
+            color="#A43131"
+          />
+          <Title>모임 이름</Title>
+          <TextInput
+            style={styles.input}
+            onChangeText={(text) => setName(text)}
+          />
+        </Row>
+        <TextInput
+          style={styles.inputBox}
+          onChangeText={(text) => setIntroduce(text)}
+          placeholder="모임을 소개해주세요"
+          placeholderTextColor="#9B9B9B"
+          multiline={true}
+          textAlignVertical="top" //android용 확인
+        />
+        <Hr />
+        <Row>
+          <People name="people-alt" size={17} color="#A43131" />
+          <Title>모집 인원 수</Title>
+          <Dropdown
+            style={[styles.dropdown, isFocusNum && { borderColor: "#A43131" }]}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            inputSearchStyle={styles.inputSearchStyle}
+            activeColor="#F7E5E5"
+            data={numOfPerson}
+            search
+            maxHeight={300}
+            labelField="label"
+            valueField="value"
+            placeholder={!isFocusNum ? "Select items" : "..."}
+            searchPlaceholder="Search..."
+            autoScroll={false} //이거 줄까? 말까?
+            onFocus={() => setIsFocusNum(true)}
+            onBlur={() => setIsFocusNum(false)}
+            onChange={(item) => {
+              setNum(item.label);
+              setIsFocusNum(false);
+            }}
+            itemTextStyle={styles.itemTextStyle}
+            renderRightIcon={() => (
+              <Entypo
+                style={styles.icon}
+                color={isFocusNum ? "#A43131" : "gray"}
+                name={isFocusNum ? "chevron-up" : "chevron-down"}
+                size={20}
+              />
+            )}
+          />
+        </Row>
+        <NoticeText>
+          최소 인원 4명 최대 인원 10명으로 설정 가능합니다.
+        </NoticeText>
+        <Row>
+          <Feather name="calendar" size={17} color="#A43131" />
+          <Title>시작일</Title>
+          <TouchableOpacity onPress={() => setOpen(true)}>
+            <CalendarContainer>
+              <DatePicker
+                modal
+                mode="date"
+                open={open}
+                date={date}
+                onConfirm={(date) => {
+                  setOpen(false);
+                  setDate(date);
+                  const formattedDate = moment(date).format("YYYY-MM-DD");
+                  setDateText(formattedDate);
+                }}
+                onCancel={() => {
+                  setOpen(false);
+                }}
+              />
+              <CalendarText>{dateText}</CalendarText>
+            </CalendarContainer>
+          </TouchableOpacity>
+          <EndTitle> ~ 종료일</EndTitle>
+          <TouchableOpacity onPress={() => setEndOpen(true)}>
+            <CalendarContainer>
+              <DatePicker
+                modal
+                mode="date"
+                open={endOpen}
+                date={endDate}
+                onConfirm={handleConfirm}
+                onCancel={() => {
+                  setEndOpen(false);
+                }}
+              />
+              <CalendarText>{endDateText}</CalendarText>
+            </CalendarContainer>
+          </TouchableOpacity>
+        </Row>
+        <Row>
+          <Ionicons name="location-outline" size={17} color="#A43131" />
+          <Title>모임 장소</Title>
+          <TextInput
+            style={styles.input}
+            onChangeText={(text) => setLocation(text)}
+            placeholder="오프라인 혹은 온라인 장소를 입력하세요"
+          />
+        </Row>
+        <Hr />
         <TouchableOpacity
-          style={styles.back}
+          style={styles.end}
           onPress={() => {
-            navigation.goBack();
+            if (validate) {
+              navigation.navigate("AddNext", {
+                value,
+                name,
+                introduce,
+                num,
+                dateText,
+                endDateText,
+                location,
+                imageUri,
+              });
+            } else {
+              Alert.alert("모든 필수 요소를 입력해주새요.");
+            }
           }}
         >
-          <Entypo name="chevron-left" size={24} color="black" />
+          <NextButton>
+            <NextText>다음</NextText>
+          </NextButton>
         </TouchableOpacity>
-        <TopTitle>모임 개설하기</TopTitle>
-      </TopTap>
-      <TouchableOpacity onPress={openImagePicker}>
-        <ImageContainer>
-          <FontAwesome name="camera" size={30} color="gray" />
-          <ImageTitle>사진 추가</ImageTitle>
-        </ImageContainer>
-      </TouchableOpacity>
-      <Row>
-        <Class name="category" size={17} color="#A43131" />
-        <Title>모임 종류</Title>
-        <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: "#A43131" }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          activeColor="#F7E5E5"
-          data={category}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="num"
-          placeholder={!isFocus ? "Select items" : "..."}
-          searchPlaceholder="Search..."
-          autoScroll={false} //이거 줄까? 말까?
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={(item) => {
-            setValue(item.label);
-            setIsFocus(false);
-          }}
-          itemTextStyle={styles.itemTextStyle}
-          renderRightIcon={() => (
-            <Entypo
-              style={styles.icon}
-              color={isFocus ? "#A43131" : "gray"}
-              name={isFocus ? "chevron-up" : "chevron-down"}
-              size={20}
-            />
-          )}
-        />
-      </Row>
-      <Row>
-        <Name
-          name="badge-account-horizontal-outline"
-          size={17}
-          color="#A43131"
-        />
-        <Title>모임 이름</Title>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => setName(text)}
-        />
-      </Row>
-      <TextInput
-        style={styles.inputBox}
-        onChangeText={(text) => setIntroduce(text)}
-        placeholder="모임을 소개해주세요"
-        placeholderTextColor="#9B9B9B"
-        multiline={true}
-        textAlignVertical="top" //android용 확인
-      />
-      <Hr />
-      <Row>
-        <People name="people-alt" size={17} color="#A43131" />
-        <Title>모집 인원 수</Title>
-        <Dropdown
-          style={[styles.dropdown, isFocusNum && { borderColor: "#A43131" }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          activeColor="#F7E5E5"
-          data={numOfPerson}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocusNum ? "Select items" : "..."}
-          searchPlaceholder="Search..."
-          autoScroll={false} //이거 줄까? 말까?
-          onFocus={() => setIsFocusNum(true)}
-          onBlur={() => setIsFocusNum(false)}
-          onChange={(item) => {
-            setNum(item.label);
-            setIsFocusNum(false);
-          }}
-          itemTextStyle={styles.itemTextStyle}
-          renderRightIcon={() => (
-            <Entypo
-              style={styles.icon}
-              color={isFocusNum ? "#A43131" : "gray"}
-              name={isFocusNum ? "chevron-up" : "chevron-down"}
-              size={20}
-            />
-          )}
-        />
-      </Row>
-      <NoticeText>최소 인원 4명 최대 인원 10명으로 설정 가능합니다.</NoticeText>
-      <Row>
-        <Feather name="calendar" size={17} color="#A43131" />
-        <Title>시작일</Title>
-        <TouchableOpacity onPress={() => setOpen(true)}>
-          <CalendarContainer>
-            <DatePicker
-              modal
-              mode="date"
-              open={open}
-              date={date}
-              onConfirm={(date) => {
-                setOpen(false);
-                setDate(date);
-                const formattedDate = moment(date).format("YYYY-MM-DD");
-                setDateText(formattedDate);
-              }}
-              onCancel={() => {
-                setOpen(false);
-              }}
-            />
-            <CalendarText>{dateText}</CalendarText>
-          </CalendarContainer>
-        </TouchableOpacity>
-        <EndTitle> ~ 종료일</EndTitle>
-        <TouchableOpacity onPress={() => setEndOpen(true)}>
-          <CalendarContainer>
-            <DatePicker
-              modal
-              mode="date"
-              open={endOpen}
-              date={endDate}
-              onConfirm={handleConfirm}
-              onCancel={() => {
-                setEndOpen(false);
-              }}
-            />
-            <CalendarText>{endDateText}</CalendarText>
-          </CalendarContainer>
-        </TouchableOpacity>
-      </Row>
-      <Row>
-        <Ionicons name="location-outline" size={17} color="#A43131" />
-        <Title>모임 장소</Title>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => setLocation(text)}
-          placeholder="오프라인 혹은 온라인 장소를 입력하세요"
-        />
-      </Row>
-      <Hr />
-      <TouchableOpacity
-        style={styles.end}
-        onPress={() =>
-          navigation.navigate("AddNext", {
-            value,
-            name,
-            introduce,
-            num,
-            start,
-            end,
-            location,
-            imageUri,
-          })
-        }
-      >
-        <NextButton>
-          <NextText>다음</NextText>
-        </NextButton>
-      </TouchableOpacity>
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 export default Add;
