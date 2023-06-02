@@ -5,6 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import LogIn from "./screens/Home/Login";
 import { TokenProvider } from "./screens/Home/TokenContext";
 import { QueryClient, QueryClientProvider } from "react-query";
+import notifee, { EventType } from '@notifee/react-native';
+
 
 const queryClient = new QueryClient();
 import Loading from "./screens/Home/Loading";
@@ -35,6 +37,38 @@ export default function App() {
     };
     getToken();
   }, []);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     await notifee.setNotificationCategories([
+  //       {
+  //         id: "new-episode",
+  //         actions: [
+  //           { id: "default", title: "Watch Now", foreground: true },
+  //           { id: "bookmark", title: "Save For Later" },
+  //         ],
+  //       },
+  //     ]);
+  //   })();
+
+  //   return notifee.onForegroundEvent(async ({ type, detail }) => {
+  //     if (
+  //       type === EventType.ACTION_PRESS &&
+  //       detail.pressAction?.id === "bookmark"
+  //     ) {
+  //       setBookmarks([
+  //         ...bookmarks,
+  //         parseInt(detail.notification?.data?.showId as string),
+  //       ]);
+  //     } else if (
+  //       detail.pressAction?.id === "dismiss" &&
+  //       detail.notification?.id
+  //     ) {
+  //       await notifee.cancelNotification(detail.notification.id);
+  //     }
+  //   });
+  // }, []);
+  
 
   if (token !== null) {
     return (

@@ -9,6 +9,8 @@ import { partyApi } from "../../api";
 import React, { useContext, useEffect, useState } from "react";
 import { useQueryClient, useQuery } from "react-query";
 import Loader from "../../components/Loader";
+import moment from "moment";
+import 'moment/locale/ko';
 import {
   RefreshControl,
   ScrollView,
@@ -17,6 +19,9 @@ import {
 } from "react-native-gesture-handler";
 import { TouchableOpacity } from "react-native";
 import FeedTabs from "../../navigation/FeedTab";
+import { useNavigation } from "@react-navigation/native";
+import { TokenContext } from "../Home/TokenContext";
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -123,6 +128,7 @@ const Absolute = styled.View`
 const TagText = styled.Text`
   font-size: 15px;
   margin-left: 170px;
+  margin-right: 10px;
   margin-top: -30px;
   color: #a43131;
   font-weight: bold;
@@ -133,7 +139,7 @@ const PBoard = styled.View`
   height: 20px;
   border-radius: 10px;
   background-color: #f1d7d7;
-  margin-left: 30px;
+  margin-left: 25px;
   align-items: center;
   justify-content: center;
 `;
@@ -152,11 +158,12 @@ const styles = StyleSheet.create({
   },
 });
 
-function Meeting({ navigation, token }) {
-
+function Meeting({ token }) {
   //날짜 필터링
   const [date, setDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+
+  const navigation = useNavigation();
 
   //선택한 카테고리
   const [selectedCategory, setSelectedCategory] = useState("전체");
@@ -164,9 +171,13 @@ function Meeting({ navigation, token }) {
   //주 횟수 설정
   const [frequency, setFrequency] = useState("");
 
-  //partyId 
+  //partyId feed로 넘기기 / 참가여부 확인 context
+  const { partyIdContext, setPartyIdContext, joinCheck, setJoinCheck } =
+    useContext(TokenContext);
 
   const [partyId, setPartyId] = useState(null);
+
+  // partyId feed로 넘기기
 
   //flatlist 카테고리 render
   function ListItem({ item }) {
@@ -204,9 +215,10 @@ function Meeting({ navigation, token }) {
     const count = filteredStr.length;
 
     //시작일, 종료일 필터링
-    // const formattedDate = moment(date).format('L');
-    // setDate(date);
-    
+
+    const formattedDate = moment(item.startAt).format("MM/DD(dd)");
+    const formattedEndDate = moment(item.endDate).format("MM/DD(dd)");
+
 
     if (selectedCategory == "전체") {
       return (
@@ -222,7 +234,7 @@ function Meeting({ navigation, token }) {
               <GroupTitle>{item.groupName}</GroupTitle>
               <Row>
                 <Icon name="calendar-range-outline" size={18} />
-                <DateText>{item.startAt}</DateText>
+                <DateText>{formattedDate} ~ {formattedEndDate}</DateText>
                 <PBoard>
                   <WeekText>주 {count}일</WeekText>
                 </PBoard>
@@ -234,12 +246,12 @@ function Meeting({ navigation, token }) {
               <Row>
                 <People name="people-alt" size={18} />
                 <NumofPerson>
-                  {item.ownerId}/{item.max}
+                  {item.members.length}/{item.max}
                 </NumofPerson>
               </Row>
             </Column>
             <Absolute>
-              <TagText>{item.groupType}</TagText>
+              <TagText>#{item.groupType}</TagText>
             </Absolute>
           </GBoard>
         </GContent>
@@ -259,7 +271,7 @@ function Meeting({ navigation, token }) {
                 <GroupTitle>{item.groupName}</GroupTitle>
                 <Row>
                   <Icon name="calendar-range-outline" size={18} />
-                  <DateText>{item.startAt}</DateText>
+                  <DateText>{formattedDate} ~ {formattedEndDate}</DateText>
                   <PBoard>
                     <WeekText>주 {count}일</WeekText>
                   </PBoard>
@@ -271,12 +283,12 @@ function Meeting({ navigation, token }) {
                 <Row>
                   <People name="people-alt" size={18} />
                   <NumofPerson>
-                    {item.ownerId}/{item.max}
+                    {item.members.length}/{item.max}
                   </NumofPerson>
                 </Row>
               </Column>
               <Absolute>
-                <TagText>{item.groupType}</TagText>
+                <TagText>#{item.groupType}</TagText>
               </Absolute>
             </GBoard>
           </GContent>
@@ -334,9 +346,10 @@ function Meeting({ navigation, token }) {
               onPress={() => {
                 //console.log(partyId);
                 setPartyId(item.partyId);
-                navigation.navigate("AddStack" ,{screen:"FeedTabs"});
+                setPartyIdContext(item.partyId);
+                console.log(partyId);
+                navigation.navigate("FeedTabs");
               }}
-              
             >
               <RenderGroup item={item} />
             </TouchableOpacity>

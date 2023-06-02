@@ -1,5 +1,5 @@
 import { Text, Image, StyleSheet, View, Dimensions } from "react-native";
-import styled from 'styled-components/native';
+import styled from "styled-components/native";
 import { partyApi } from "../../api";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Location from "react-native-vector-icons/Ionicons";
@@ -15,13 +15,14 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { TouchableOpacity } from "react-native";
-
+import { Feather } from "@expo/vector-icons";
+import moment from "moment";
+import 'moment/locale/ko';
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const Container = styled.View`
   flex: 1;
-  
   align-items: center;
   justify-content: center;
 `;
@@ -96,7 +97,7 @@ const PBoard = styled.View`
   height: 20px;
   border-radius: 10px;
   background-color: #f1d7d7;
-  margin-left: 30px;
+  margin-left: 25px;
   align-items: center;
   justify-content: center;
 `;
@@ -111,19 +112,39 @@ const Absolute = styled.View`
   top: 100;
   right: 10;
 `;
-export default function MyMeeting({navigation}) {
 
-	const { token } = useContext(TokenContext);
-//	console.log(token);
-	const queryClient = useQueryClient();
+const MyContainer = styled.View`
+  align-items: center;
+  margin-top: 30px;
+`;
+const Content = styled.View`
+  width: ${SCREEN_WIDTH * 0.9}px;
+  height: 170px;
+  background-color: white;
+  border-radius: 20px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const NoticeText = styled.Text`
+  color: #a43131;
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 10px;
+`;
+
+export default function MyMeeting({ navigation }) {
+  const { token } = useContext(TokenContext);
+  console.log(token);
+  const queryClient = useQueryClient();
 
   const {
     isLoading: partyMyInfoLoading,
     data: partyMyInfoData,
     isRefetching: isRefetchingPartyMyInfo,
   } = useQuery(["party", "partyMyInfo"], () => partyApi.partyMyInfo(token), {
-		enabled: Boolean(token)
-	});
+    enabled: Boolean(token),
+  });
 
   const onRefresh = async () => {
     queryClient.refetchQueries(["party"]);
@@ -132,75 +153,83 @@ export default function MyMeeting({navigation}) {
   const loading = partyMyInfoLoading;
   const refreshing = isRefetchingPartyMyInfo;
 
-	if (!partyMyInfoData) {
+  if (!partyMyInfoData) {
     console.log("No data");
   }
 
-	function RenderGroup({item}){
-		 //주 횟수 필터링
-		 str = item.alarmFrequency;
-		 const filteredStr = str.split("").filter((char) => {
-			 return char >= "가" && char <= "힣";
-		 });
-		 const count = filteredStr.length;
+  function RenderGroup({ item }) {
+    //주 횟수 필터링
+    str = item.alarmFrequency;
+    const filteredStr = str.split("").filter((char) => {
+      return char >= "가" && char <= "힣";
+    });
+    const count = filteredStr.length;
 
-		 
-		return loading ? (
-			<Loader />
-		) : (
-			<GContent>
-				<GBoard>
-					<ProfileContainer>
-						<Image
-							source={{ uri: item.partyImg }}
-							style={{ width: 80, height: 70, borderRadius: 10 }}
-						/>
-					</ProfileContainer>
-					<Column>
-						<GroupTitle>{item.groupName}</GroupTitle>
-						<Row>
-							<Icon name="calendar-range-outline" size={18} />
-							<DateText>{item.startAt}</DateText>
-							<PBoard>
-								<WeekText>주 {count}일</WeekText>
-							</PBoard>
-						</Row>
-						<Row>
-							<Location name="location-outline" size={18} />
-							<LocationText>{item.location}</LocationText>
-						</Row>
-						<Row>
-							<People name="people-alt" size={18} />
-							<NumofPerson>
-								{item.ownerId}/{item.max}
-							</NumofPerson>
-						</Row>
-					</Column>
-					<Absolute>
-						<TagText>{item.groupType}</TagText>
-					</Absolute>
-				</GBoard>
-			</GContent>
-		);
-	}
+    //시작일, 종료일 필터링
+    const formattedDate = moment(item.startAt).format("MM/DD(dd)");
+    const formattedEndDate = moment(item.endDate).format("MM/DD(dd)");
 
-	return loading ? (
+    return (
+      <GContent>
+        <GBoard>
+          <ProfileContainer>
+            <Image
+              source={{ uri: item.partyImg }}
+              style={{ width: 80, height: 70, borderRadius: 10 }}
+            />
+          </ProfileContainer>
+          <Column>
+            <GroupTitle>{item.groupName}</GroupTitle>
+            <Row>
+              <Icon name="calendar-range-outline" size={18} />
+              <DateText>{formattedDate} ~ {formattedEndDate}</DateText>
+              <PBoard>
+                <WeekText>주 {count}일</WeekText>
+              </PBoard>
+            </Row>
+            <Row>
+              <Location name="location-outline" size={18} />
+              <LocationText>{item.location}</LocationText>
+            </Row>
+            <Row>
+              <People name="people-alt" size={18} />
+              <NumofPerson>
+                {item.members.length}/{item.max}
+              </NumofPerson>
+            </Row>
+          </Column>
+          <Absolute>
+            <TagText>#{item.groupType}</TagText>
+          </Absolute>
+        </GBoard>
+      </GContent>
+    );
+  }
+
+  return loading ? (
     <Loader />
   ) : (
-		<GestureHandlerRootView style={{ flex: 1 }}>
-		<Container>
-			<FlatList
-          horizontal={false}
-          // data={selectedCategory ? partyInfoData.filter(item => item.groupType === selectedCategory) : partyInfoData}
-          data={partyMyInfoData}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-            >
-              <RenderGroup item={item} />
-            </TouchableOpacity>
-          )}
-        />
-		</Container>
-		</GestureHandlerRootView>
-	);
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {!partyMyInfoData || partyMyInfoData.length === 0 ? (
+        <MyContainer>
+          <Content>
+            <Feather name="frown" size={30} color="#A43131" />
+            <NoticeText>현재 참여하고 있는 모임이 없어요!</NoticeText>
+          </Content>
+        </MyContainer>
+      ) : (
+        <Container>
+          <FlatList
+            horizontal={false}
+            data={partyMyInfoData}
+            renderItem={({ item }) => (
+              <TouchableOpacity>
+                <RenderGroup item={item} />
+              </TouchableOpacity>
+            )}
+          />
+        </Container>
+      )}
+    </GestureHandlerRootView>
+  );
 }

@@ -1,4 +1,6 @@
 #import "AppDelegate.h"
+#import <UserNotifications/UserNotifications.h>
+#import <RNCPushNotificationIOS.h>
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
@@ -8,6 +10,7 @@
 #import <Firebase/Firebase.h>
 
 //notification
+
 #import <UserNotifications/UserNotifications.h>
 #import <RNCPushNotificationIOS.h>
 
@@ -138,6 +141,9 @@
 didReceiveNotificationResponse:(UNNotificationResponse *)response
          withCompletionHandler:(void (^)(void))completionHandler
 {
+  if ([response.actionIdentifier isEqualToString:@"YOUR_ACTION_IDENTIFIER"]) {
+    // Handle action button tap
+  }
   [RNCPushNotificationIOS didReceiveNotificationResponse:response];
 }
 

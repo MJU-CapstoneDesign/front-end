@@ -12,6 +12,7 @@
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",
     "@invertase/react-native-apple-authentication": "^2.2.2",
+    "@notifee/react-native": "^7.7.1",
     "@react-native-async-storage/async-storage": "~1.17.3",
     "@react-native-community/push-notification-ios": "^1.11.0",
     "@react-native-firebase/app": "^17.4.0",
@@ -32,6 +33,7 @@
     "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-native": "0.71.3",
+    "react-native-async-storage": "^0.0.1",
     "react-native-calendars": "^1.1297.0",
     "react-native-calendarview-datepicker": "^0.0.12",
     "react-native-date-picker": "^4.2.13",
