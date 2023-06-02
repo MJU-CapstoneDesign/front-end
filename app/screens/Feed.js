@@ -20,6 +20,8 @@ import { ActivityIndicator } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { FontAwesome } from "@expo/vector-icons";
 import { adminToken } from "../api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment";
 
 // 화면 전체를 채우는 컨테이너 (사용할지 안할지 정해지지않음)
 const Container = styled.View`
@@ -221,7 +223,8 @@ const CommentProfilePhoto = styled.View`
 // 피드 컴포넌트
 function Feed({ navigation }) {
   // 토큰 저장할 것
-  const { token } = useContext(TokenContext);
+  const { token, partyIdContext, joinCheck, setJoinCheck } =
+    useContext(TokenContext);
 
   // 피드 api 호출
   const [feed, setFeed] = useState(null);
@@ -230,7 +233,7 @@ function Feed({ navigation }) {
   // const feed_id = 14;
   const [feed_id, setFeed_id] = useState(null);
   useEffect(() => {
-    setFeed_id(14);
+    setFeed_id(partyIdContext);
   }, [feed_id]);
 
   // 로딩화면 결정
@@ -238,9 +241,6 @@ function Feed({ navigation }) {
 
   // 피드 api와 멤버 api 결과 합친 결과값
   const [assembleData, setAssembleData] = useState(null);
-
-  // // 댓글 api 멤버 프로필이랑 이름 추가하기
-  // const [assembleCommentData, setAssembleCommentData] = useState(null);
 
   // 게시글 올리기 혹은 취소 눌렀을때 화면 재렌더링(로딩화면)
   const isFocused = useIsFocused();
@@ -526,7 +526,7 @@ function Feed({ navigation }) {
                 const comment = commentRef.current;
                 if (comment !== "") {
                   setCommentUpdate(true);
-                  commentUpload(comment, postId);
+                  await commentUpload(comment, postId);
                   fetchFeed(feed_id);
                 }
               }}
@@ -550,20 +550,60 @@ function Feed({ navigation }) {
   };
 
   // 그룹 기본정보 api (후에 홈화면에서 받아올 정보)
-  const GroupInfoApi = {
-    groupCapProfile:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBzJTaqg2nmYXRpi_Kmmd256-OqiOB0oZfKA&usqp=CAU",
-    groupBackImg:
-      "https://eventusstorage.blob.core.windows.net/evs/Image/fastfive/17836/ProjectInfo/Cover/bdb851079dd14c57a63304758e7d7e9b.jpg",
-    groupName: "코딩 공부",
-    groupLocation: "영통동",
-    groupDays: "월,수,금",
-    groupAlarmTime: "07:00",
-    groupMemberNum: 4,
-    groupDate: "3/16 (목) ~ 5주",
-    groupDescription:
-      "월, 수, 금 주 3일 한시간이라도 좋으니 함께 코딩 공부해요!초보자도 실력자도 모두 환영입니다. :)",
+  // const GroupInfoApi = {
+  //   groupCapProfile:
+  //     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBzJTaqg2nmYXRpi_Kmmd256-OqiOB0oZfKA&usqp=CAU",
+  //   groupBackImg:
+  //     "https://eventusstorage.blob.core.windows.net/evs/Image/fastfive/17836/ProjectInfo/Cover/bdb851079dd14c57a63304758e7d7e9b.jpg",
+  //   groupName: "코딩 공부",
+  //   groupLocation: "영통동",
+  //   groupDays: "월,수,금",
+  //   groupAlarmTime: "07:00",
+  //   groupMemberNum: 4,
+  //   groupDate: "3/16 (목) ~ 5주",
+  //   groupDescription:
+  //     "월, 수, 금 주 3일 한시간이라도 좋으니 함께 코딩 공부해요!초보자도 실력자도 모두 환영입니다. :)",
+  // };
+
+  // 그룹 기본정보에서 날짜 지정하는 함수
+  const PartyComponent = ({ startAt, endAt }) => {
+    // startAt과 endAt 값을 moment 객체로 변환합니다.
+    const startDate = moment(startAt);
+    const endDate = moment(endAt);
+
+    // 'M월 D일' 형식으로 날짜를 포맷합니다.
+    const formattedStartDate = startDate.format("M월 D일");
+    const formattedEndDate = endDate.format("M월 D일");
+
+    // 결과 문자열을 생성합니다.
+    const dateString = `${formattedStartDate} ~ ${formattedEndDate}`;
+
+    return dateString;
   };
+
+  // 그룹 기본정보 api 호출
+  const [groupInfo, setGroupInfo] = useState(null);
+  const [groupMemNum, setGroupMemNum] = useState(null);
+  const [groupDate, setGroupDate] = useState(null);
+
+  useEffect(() => {
+    fetch(`${URL}/party/info/${partyIdContext}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        setGroupInfo(res);
+        setGroupMemNum(groupInfo?.members.length);
+        const dateString = PartyComponent({
+          startAt: res.startAt,
+          endAt: res.endAt,
+        });
+        setGroupDate(dateString);
+      });
+  }, [partyIdContext, groupMemNum, groupDate]);
 
   // 사용자 화면 크기에 맞게 화면 비율 세팅
   const { width } = Dimensions.get("window");
@@ -571,13 +611,20 @@ function Feed({ navigation }) {
   // 그룹에 참여해있는지 여부
   const [isJoin, setIsJoin] = useState(false);
 
-  // 파티 아이디 저장(홈화면에서 받아와야 함)
-  const partyId = 14;
+  // 참여했는지 여부 확인후 참여하기 버튼 노출결정
+  useEffect(() => {
+    AsyncStorage.getItem(`partyId${partyIdContext}`).then((res) => {
+      if (res === "join") {
+        setIsJoin(true);
+      }
+    });
+  }, []);
 
   // 참여하기 눌렀을때 함수
   const JoinButton = () => {
     setIsJoin(!isJoin);
-    fetch(`${URL}/party/add/${partyId}`, {
+    AsyncStorage.setItem(`partyId${partyIdContext}`, "join");
+    fetch(`${URL}/party/add/${partyIdContext}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -595,13 +642,6 @@ function Feed({ navigation }) {
   // 댓글 재렌더링 처리부분
   // 댓글 업데이트 확인하는 state
   const [commentUpdate, setCommentUpdate] = useState(false);
-
-  function commentUpdateFunc() {
-    return new Promise(function (resolve, reject) {
-      setCommentUpdate(true);
-      resolve();
-    });
-  }
 
   // 댓글 올리기 함수호출 api
   const commentUpload = (comment, postId) => {
@@ -639,7 +679,10 @@ function Feed({ navigation }) {
     );
 
     // 최초 화면 시작시 api 연동끝났을때
-  } else if (!isLoading || (isLoading && commentUpdate)) {
+  } else if (
+    (!isLoading && groupInfo && groupMemNum) ||
+    (isLoading && commentUpdate)
+  ) {
     return (
       <>
         <ScrollView
@@ -648,7 +691,7 @@ function Feed({ navigation }) {
         >
           <BackImgView>
             <Image
-              source={{ uri: GroupInfoApi.groupBackImg }}
+              source={{ uri: groupInfo.partyImg }}
               style={{ width: 400, height: 155 }}
             />
           </BackImgView>
@@ -657,20 +700,19 @@ function Feed({ navigation }) {
             <InfoView>
               <ProfileView>
                 <Image
-                  source={{ uri: GroupInfoApi.groupCapProfile }}
-                  style={{ width: 45, height: 45, borderRadius: 50 }}
+                  source={{ uri: groupInfo.members[0].profile }}
+                  style={{ width: 50, height: 50, borderRadius: 50 }}
                 />
               </ProfileView>
               <GroupInfoView>
                 <GroupNameView>
                   <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                    {GroupInfoApi.groupName}
+                    {groupInfo.groupName}
                   </Text>
                 </GroupNameView>
                 <LocationMemberContainer>
                   <Text style={{ fontSize: 11 }}>
-                    {GroupInfoApi.groupLocation} ∙ 멤버{" "}
-                    {GroupInfoApi.groupMemberNum}
+                    {groupInfo.location} ∙ 멤버 {groupMemNum}
                   </Text>
                 </LocationMemberContainer>
                 <DateView>
@@ -680,18 +722,18 @@ function Feed({ navigation }) {
                       size={11}
                       color="black"
                     />{" "}
-                    {GroupInfoApi.groupDate}[{GroupInfoApi.groupDays}]{"  "}
+                    {groupDate}[{groupInfo.alarmFrequency}]{"  "}
                     <Ionicons
                       name="ios-alarm-outline"
                       size={12}
                       color="black"
                     />
-                    {GroupInfoApi.groupAlarmTime}
+                    {groupInfo.alarmTime}
                   </Text>
                 </DateView>
                 <DescriptionView>
                   <Text style={{ fontSize: 11 }}>
-                    📌 {GroupInfoApi.groupDescription}
+                    📌 {groupInfo.description}
                   </Text>
                 </DescriptionView>
               </GroupInfoView>

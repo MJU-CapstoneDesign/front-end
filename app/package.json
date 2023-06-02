@@ -31,6 +31,7 @@
     "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-native": "0.71.3",
+    "react-native-async-storage": "^0.0.1",
     "react-native-calendars": "^1.1297.0",
     "react-native-calendarview-datepicker": "^0.0.12",
     "react-native-date-picker": "^4.2.13",
