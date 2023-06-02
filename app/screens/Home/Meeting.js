@@ -19,6 +19,8 @@ import {
 } from "react-native-gesture-handler";
 import { TouchableOpacity } from "react-native";
 import FeedTabs from "../../navigation/FeedTab";
+import { useNavigation } from "@react-navigation/native";
+import { TokenContext } from "../Home/TokenContext";
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -156,11 +158,12 @@ const styles = StyleSheet.create({
   },
 });
 
-function Meeting({ navigation, token }) {
-
+function Meeting({ token }) {
   //날짜 필터링
   const [date, setDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+
+  const navigation = useNavigation();
 
   //선택한 카테고리
   const [selectedCategory, setSelectedCategory] = useState("전체");
@@ -168,9 +171,13 @@ function Meeting({ navigation, token }) {
   //주 횟수 설정
   const [frequency, setFrequency] = useState("");
 
-  //partyId 
+  //partyId feed로 넘기기 / 참가여부 확인 context
+  const { partyIdContext, setPartyIdContext, joinCheck, setJoinCheck } =
+    useContext(TokenContext);
 
   const [partyId, setPartyId] = useState(null);
+
+  // partyId feed로 넘기기
 
   //flatlist 카테고리 render
   function ListItem({ item }) {
@@ -208,9 +215,10 @@ function Meeting({ navigation, token }) {
     const count = filteredStr.length;
 
     //시작일, 종료일 필터링
+
     const formattedDate = moment(item.startAt).format("MM/DD(dd)");
     const formattedEndDate = moment(item.endDate).format("MM/DD(dd)");
-    
+
 
     if (selectedCategory == "전체") {
       return (
@@ -338,9 +346,10 @@ function Meeting({ navigation, token }) {
               onPress={() => {
                 //console.log(partyId);
                 setPartyId(item.partyId);
-                navigation.navigate("AddStack" ,{screen:"FeedTabs"});
+                setPartyIdContext(item.partyId);
+                console.log(partyId);
+                navigation.navigate("FeedTabs");
               }}
-              
             >
               <RenderGroup item={item} />
             </TouchableOpacity>

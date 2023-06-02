@@ -9,9 +9,17 @@ import notifee, { EventType } from '@notifee/react-native';
 
 
 const queryClient = new QueryClient();
+import Loading from "./screens/Home/Loading";
 
 export default function App() {
   const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     const getToken = async () => {
@@ -66,9 +74,9 @@ export default function App() {
     return (
       <TokenProvider>
         <QueryClientProvider client={queryClient}>
-        <NavigationContainer>
-          <Root token={token} />
-        </NavigationContainer>
+          <NavigationContainer>
+            {isLoading ? <Loading /> : <Root token={token} />}
+          </NavigationContainer>
         </QueryClientProvider>
       </TokenProvider>
     );
