@@ -141,6 +141,9 @@
 didReceiveNotificationResponse:(UNNotificationResponse *)response
          withCompletionHandler:(void (^)(void))completionHandler
 {
+  if ([response.actionIdentifier isEqualToString:@"YOUR_ACTION_IDENTIFIER"]) {
+    // Handle action button tap
+  }
   [RNCPushNotificationIOS didReceiveNotificationResponse:response];
 }
 

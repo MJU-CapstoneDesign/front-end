@@ -190,6 +190,9 @@ const styles = StyleSheet.create({
   button: {
     fontSize: 10,
   },
+  image: {
+    backgroundColor: "#f7e5e5",
+  },
 });
 
 const category = [
@@ -244,6 +247,7 @@ function Add({ navigation }) {
   const [endDate, setEndDate] = useState(new Date());
   const [endOpen, setEndOpen] = useState(false);
   const [endDateText, setEndDateText] = useState(null);
+
 
   //시작일 ,종료일 비교
   const handleConfirm = (selectedDate) => {
@@ -319,9 +323,21 @@ function Add({ navigation }) {
     // imageUrl 사용 로직 ...
   };
 
+  
+  //입력 유효성 validate
+  const validate = () => {
+    if ( value !== null && name !== null && introduce !== null && num !== null && dateText !== null && 
+      endDateText !== null && location !== null && imageUri !== null)
+      {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <TopTap>
           <TouchableOpacity
             style={styles.back}
@@ -334,7 +350,7 @@ function Add({ navigation }) {
           <TopTitle>모임 개설하기</TopTitle>
         </TopTap>
         <TouchableOpacity onPress={openImagePicker}>
-          <ImageContainer>
+          <ImageContainer style={[selectedImage ? styles.image : null]}>
             <FontAwesome name="camera" size={30} color="gray" />
             <ImageTitle>사진 추가</ImageTitle>
           </ImageContainer>
@@ -483,24 +499,28 @@ function Add({ navigation }) {
         <Hr />
         <TouchableOpacity
           style={styles.end}
-          onPress={() =>
-            navigation.navigate("AddNext", {
-              value,
-              name,
-              introduce,
-              num,
-              dateText,
-              endDateText,
-              location,
-              imageUri,
-            })
-          }
+          onPress={() => {
+            if (validate) {
+              navigation.navigate("AddNext", {
+                value,
+                name,
+                introduce,
+                num,
+                dateText,
+                endDateText,
+                location,
+                imageUri,
+              });
+            } else {
+              Alert.alert("모든 필수 요소를 입력해주새요.");
+            }
+          }}
         >
           <NextButton>
             <NextText>다음</NextText>
           </NextButton>
         </TouchableOpacity>
-    </SafeAreaView>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 }

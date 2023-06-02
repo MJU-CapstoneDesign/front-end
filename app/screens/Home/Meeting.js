@@ -126,6 +126,7 @@ const Absolute = styled.View`
 const TagText = styled.Text`
   font-size: 15px;
   margin-left: 170px;
+  margin-right: 10px;
   margin-top: -30px;
   color: #a43131;
   font-weight: bold;
@@ -262,7 +263,7 @@ function Meeting({ navigation, token }) {
                 <GroupTitle>{item.groupName}</GroupTitle>
                 <Row>
                   <Icon name="calendar-range-outline" size={18} />
-                  <DateText>{item.startAt}</DateText>
+                  <DateText>{formattedDate} ~ {formattedEndDate}</DateText>
                   <PBoard>
                     <WeekText>주 {count}일</WeekText>
                   </PBoard>
@@ -274,12 +275,12 @@ function Meeting({ navigation, token }) {
                 <Row>
                   <People name="people-alt" size={18} />
                   <NumofPerson>
-                    {item.ownerId}/{item.max}
+                    {item.members.length}/{item.max}
                   </NumofPerson>
                 </Row>
               </Column>
               <Absolute>
-                <TagText>{item.groupType}</TagText>
+                <TagText>#{item.groupType}</TagText>
               </Absolute>
             </GBoard>
           </GContent>

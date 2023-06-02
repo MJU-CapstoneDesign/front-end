@@ -9,6 +9,7 @@
 //@interface AppDelegate : RCTAppDelegate <UNUserNotificationCenterDelegate>
 //@end
 
+
  @interface AppDelegate : EXAppDelegateWrapper <UNUserNotificationCenterDelegate>
 
  @end
