@@ -22,6 +22,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { adminToken } from "../api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
+import { Entypo } from "@expo/vector-icons";
 
 // 화면 전체를 채우는 컨테이너 (사용할지 안할지 정해지지않음)
 const Container = styled.View`
@@ -242,6 +243,10 @@ function Feed({ navigation }) {
   // 피드 api와 멤버 api 결과 합친 결과값
   const [assembleData, setAssembleData] = useState(null);
 
+  // useEffect(() => {
+  //   console.log(assembleData[0].comments);
+  // }, [assembleData]);
+
   // 게시글 올리기 혹은 취소 눌렀을때 화면 재렌더링(로딩화면)
   const isFocused = useIsFocused();
   useEffect(() => {
@@ -282,20 +287,31 @@ function Feed({ navigation }) {
           })
             .then((response) => response.json())
             .then((member) => {
-              const comments = item.comments.map((comment) => {
+              const commentsPromise = item.comments.map((comment) => {
+                return fetch(`${URL}/member/info/${comment.memberId}`, {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${adminToken}`,
+                  },
+                })
+                  .then((response) => response.json())
+                  .then((commentMember) => {
+                    return {
+                      ...comment,
+                      name: commentMember.name,
+                      profile: commentMember.profile,
+                    };
+                  });
+              });
+
+              return Promise.all(commentsPromise).then((comments) => {
                 return {
-                  ...comment,
+                  ...item,
+                  comments,
                   name: member.name,
                   profile: member.profile,
                 };
               });
-
-              return {
-                ...item,
-                comments,
-                name: member.name,
-                profile: member.profile,
-              };
             });
         })
       )
@@ -712,6 +728,7 @@ function Feed({ navigation }) {
                 </GroupNameView>
                 <LocationMemberContainer>
                   <Text style={{ fontSize: 11 }}>
+                    <Entypo name="location" size={11} color="black" />{" "}
                     {groupInfo.location} ∙ 멤버 {groupMemNum}
                   </Text>
                 </LocationMemberContainer>

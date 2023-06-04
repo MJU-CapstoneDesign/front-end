@@ -49,7 +49,7 @@ function FeedWrite({ navigation }) {
   const [selectedImage, setSelectedImage] = useState(null);
 
   // 토큰 값 (useContext 사용)
-  const { token } = useContext(TokenContext);
+  const { token, partyIdContext } = useContext(TokenContext);
 
   // 이미지 선택 함수
   const openImagePicker = () => {
@@ -89,7 +89,7 @@ function FeedWrite({ navigation }) {
         },
         body: JSON.stringify({
           content: text,
-          partyId: 14,
+          partyId: partyIdContext,
           img: imageUri,
         }),
       })

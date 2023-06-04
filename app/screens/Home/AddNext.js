@@ -13,6 +13,7 @@ import notifee, { TimestampTrigger, TriggerType } from "@notifee/react-native";
 // import alarm from "../../sounds/alarm";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+
 const TopTap = styled.View`
   height: 30px;
   margin-bottom: 20px;
@@ -209,6 +210,12 @@ function AddNext({ navigation, route }) {
     // Request permissions (required for iOS)
     await notifee.requestPermission();
 
+    // notifee.createChannel({
+    //   id: 'custom-sound',
+    //   name: 'Channel with custom sound',
+    //   sound: 'alarm',
+    // });
+
     const date = new Date(Date.now());
     date.setHours(hour);
     date.setMinutes(min);
@@ -216,55 +223,30 @@ function AddNext({ navigation, route }) {
 
     const trigger = {
       type: TriggerType.TIMESTAMP,
-      timestamp: date.getTime(), // 5 seconds from now
+      timestamp: date.getTime(), 
     };
     console.log(trigger);
-
-    // useEffect(() => {
-    //   (async () => {
-    //     await notifee.setNotificationCategories([
-    //       {
-    //         id: "new-episode",
-    //         actions: [
-    //           { id: "default", title: "Watch Now", foreground: true },
-    //           { id: "bookmark", title: "Save For Later" },
-    //         ],
-    //       },
-    //     ]);
-    //   })();
-  
-    //   return notifee.onForegroundEvent(async ({ type, detail }) => {
-    //     if (
-    //       type === EventType.ACTION_PRESS &&
-    //       detail.pressAction?.id === "bookmark"
-    //     ) {
-    //       console.log("onForeground");
-    //     } else if (
-    //       detail.pressAction?.id === "dismiss" &&
-    //       detail.notification?.id
-    //     ) {
-    //       await notifee.cancelNotification(detail.notification.id);
-    //     }
-    //   });
-    // }, []);
-
+    
     await notifee.createTriggerNotification(
       {
-        id: 'message',
-        title: "name",
-        body: "introduce",
+        id: "partyId",
+        title: name,
+        body: "약속한 시간이에요",
         ios: {
           categoryId: "new-episode",
-          //sound: "alarm.wav",
+          sound:'ringtone.wav',
           attachments: [], // Add any attachments here
-          
+          targetContentId:'Alarm',
         },
         android: {
-          channelId: "default", // Android channel ID
+          channelId: "custom-sound", // Android channel ID
+          //sound:"alarm",
           smallIcon: "ic_stat_name", // Optional: Specify the small icon
-          pressAction: {
-            id: "default",
-          },
+          actions: [
+            { pressAction: { id: "dismiss" }, title: "Dismiss" },
+            { pressAction: { id: "default" }, title: "See more" },
+          ],
+          
         },
       },
       trigger
@@ -311,4 +293,5 @@ function AddNext({ navigation, route }) {
   );
 }
 export default AddNext;
+
 
