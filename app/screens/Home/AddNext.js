@@ -220,6 +220,16 @@ function AddNext({ navigation, route }) {
     date.setHours(hour);
     date.setMinutes(min);
 
+    /** 
+         * Android notifee settings
+        */
+    const id = notifee.createChannel({
+      id: 'sound',
+      name: 'Default Channel',
+      badge: true, // Show badge on app icon when a notification arrives.
+      importance: 4,
+      sound: 'alarm',
+  });
 
     const trigger = {
       type: TriggerType.TIMESTAMP,
@@ -239,14 +249,21 @@ function AddNext({ navigation, route }) {
           targetContentId:'Alarm',
         },
         android: {
-          channelId: "custom-sound", // Android channel ID
-          //sound:"alarm",
+          channelId: "sound", // Android channel ID
+          //asForegroundService: true, // Builds the notification as a headless Android Headless Task.
+          lightUpScreen: true, // Android 10+ only
+          category: "alarm",
+          sound: 'alarm',
+          //smallIcon: "ic_stat_name", // Optional: Specify the small icon
+          loopSound: true,
+          pressAction: {
+               id: "default",
+          },
           smallIcon: "ic_stat_name", // Optional: Specify the small icon
           actions: [
             { pressAction: { id: "dismiss" }, title: "Dismiss" },
             { pressAction: { id: "default" }, title: "See more" },
           ],
-          
         },
       },
       trigger
