@@ -6708,6 +6708,11 @@ react-is@^17.0.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
 
+react-native-async-storage@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-async-storage/-/react-native-async-storage-0.0.1.tgz#5f2ef5ff30eae64b4248e265b534e72ea41cdc69"
+  integrity sha512-EwOIpNfwMiELMnS7HDzgyX2xO4TALK95O473Z6Kai5Il5j/03yTTErwMtvoYnA0OKUHd1R54ptmbbMukUH03Xg==
+
 react-native-calendars@^1.1297.0:
   version "1.1298.0"
   resolved "https://registry.yarnpkg.com/react-native-calendars/-/react-native-calendars-1.1298.0.tgz#f3e4b4c18b451657505f702ea01dc43b3a849dce"
