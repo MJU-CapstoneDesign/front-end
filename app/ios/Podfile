@@ -53,6 +53,7 @@ target 'danram' do
   pod 'Firebase/CoreOnly', :modular_headers => true
   pod 'Firebase', :modular_headers => true
   pod 'react-native-date-picker', :path => '../node_modules/react-native-date-picker'
+  pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
 
   pod 'Firebase/Core'
   pod 'Firebase/Analytics'
