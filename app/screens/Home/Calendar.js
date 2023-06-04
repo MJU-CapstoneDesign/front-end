@@ -1,20 +1,20 @@
-import { StatusBar } from "expo-status-bar";
-import React from "react";
-import styled from "styled-components/native";
+import React  from 'react';
+import styled from 'styled-components/native';
+import {
+    StyleSheet,
+} from 'react-native';
+import AgendaCalendar from "../Calendars/AgendaCalendar";
 
 const Container = styled.View`
   flex: 1;
-  background-color: #fff;
-  align-items: center;
-  justify-content: center;
 `;
 
-const MainText = styled.Text``;
-
 export default function Calendar() {
-  return (
-    <Container>
-      <MainText>Calendar</MainText>
-    </Container>
-  );
+
+    return (
+        <Container>
+            <AgendaCalendar/>
+        </Container>
+    );
 }
+
