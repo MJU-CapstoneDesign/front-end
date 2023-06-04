@@ -6,7 +6,7 @@ import FeedTabs from "./FeedTab";
 import HomeTabs from "./HomeTabs";
 import HomeFeedStack from "./HomeFeedStack";
 import { TokenContext } from "../screens/Home/TokenContext";
-
+import Alarm from "../screens/Alarm";
 const Stack = createNativeStackNavigator();
 
 function Root({ token }) {
@@ -20,6 +20,7 @@ function Root({ token }) {
       <Stack.Screen name="HomeFeedStack" component={HomeFeedStack} />
       <Stack.Screen name="FeedTabs" component={FeedTabs} />
       <Stack.Screen name="HomeTabs" component={HomeTabs} />
+      <Stack.Screen name="Alarm" component={Alarm}/>
     </Stack.Navigator>
   );
 }

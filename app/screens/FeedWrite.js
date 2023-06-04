@@ -90,7 +90,7 @@ function FeedWrite({ navigation }) {
         body: JSON.stringify({
           content: text,
           partyId: 14,
-          img: imageUri,
+          //img: imageUri,
         }),
       })
         .then((response) => {
