@@ -42,19 +42,6 @@ export default function App() {
     getToken();
   }, []);
 
-  // notifee.setNotificationCategories([
-  //   {
-  //     id: "message",
-  //     actions: [
-  //       {
-  //         id: "view-post",
-  //         title: "View post",
-  //         // Trigger the app to open in the foreground
-  //         foreground: true,
-  //       },
-  //     ],
-  //   },
-  // ]);
   useEffect(() => {
     console.log("category!!!!!!!");
     (async () => {
@@ -68,25 +55,7 @@ export default function App() {
         },
       ]);
     })();
-  
-    // return notifee.onForegroundEvent(async ({ type, detail }) => {
-    //   if (
-    //     type === EventType.ACTION_PRESS &&
-    //     detail.pressAction?.id === "bookmark"
-    //   ) {
-    //     setBookmarks([
-    //       ...bookmarks,
-    //       parseInt(detail.notification?.data?.showId),
-    //     ]);
-    //   } else if (
-    //     detail.pressAction?.id === "dismiss" &&
-    //     detail.notification?.id
-    //   ) {
-    //     await notifee.cancelNotification(detail.notification.id);
-    //   }
-    // });
-  }, []);
-  
+
   // Subscribe to events
   useEffect(() => {
     return notifee.onForegroundEvent(({ type, detail }) => {
@@ -116,3 +85,4 @@ export default function App() {
     return <LogIn />;
   }
 }
+

@@ -23,6 +23,8 @@ import { FontAwesome } from "@expo/vector-icons";
 import { adminToken } from "../api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
+import { Entypo } from "@expo/vector-icons";
+import notifee, { TimestampTrigger, TriggerType } from "@notifee/react-native";
 
 // 화면 전체를 채우는 컨테이너 (사용할지 안할지 정해지지않음)
 const Container = styled.View`
@@ -223,6 +225,56 @@ const CommentProfilePhoto = styled.View`
 
 // 피드 컴포넌트
 function Feed({ navigation }) {
+  // 예약된 알림 보내기
+  const sendScheduledNotification = async (groupInfo) => {
+    // Request permissions (required for iOS)
+    await notifee.requestPermission();
+
+    const timeString = groupInfo.alarmTime;
+    const timeParts = timeString.split(":"); // 구분자 ":"를 기준으로 문자열을 분할하여 배열로 반환
+    const hour = timeParts[0]; // 배열의 첫 번째 요소는 시간
+    const minute = timeParts[1]; // 배열의 두 번째 요소는 분
+    console.log("시간" + hour);
+    console.log("시간" + minute);
+    const date = new Date(Date.now());
+    date.setHours(hour);
+    date.setMinutes(minute);
+
+
+    const trigger = {
+      type: TriggerType.TIMESTAMP,
+      timestamp: date.getTime(), 
+    };
+    console.log(trigger);
+    
+    await notifee.createTriggerNotification(
+      {
+        id: "partyId",
+        title: groupInfo.groupName,
+        body: "약속한 시간이에요",
+        ios: {
+          categoryId: "new-episode",
+          sound:'ringtone.wav',
+          attachments: [], // Add any attachments here
+          targetContentId:'Alarm',
+        },
+        android: {
+          channelId: "custom-sound", // Android channel ID
+          //sound:"alarm",
+          smallIcon: "ic_stat_name", // Optional: Specify the small icon
+          actions: [
+            { pressAction: { id: "dismiss" }, title: "Dismiss" },
+            { pressAction: { id: "default" }, title: "See more" },
+          ],
+          
+        },
+      },
+      trigger
+    );
+
+    
+  };
+
   // 토큰 저장할 것
   const { token, partyIdContext, joinCheck, setJoinCheck } =
     useContext(TokenContext);
@@ -243,6 +295,10 @@ function Feed({ navigation }) {
   // 피드 api와 멤버 api 결과 합친 결과값
   const [assembleData, setAssembleData] = useState(null);
 
+  // useEffect(() => {
+  //   console.log(assembleData[0].comments);
+  // }, [assembleData]);
+
   // 게시글 올리기 혹은 취소 눌렀을때 화면 재렌더링(로딩화면)
   const isFocused = useIsFocused();
   useEffect(() => {
@@ -256,7 +312,6 @@ function Feed({ navigation }) {
   const fetchFeed = async () => {
     try {
       setIsLoading(true); // isLoading 값을 true로 설정
-
       const response = await fetch(`${URL}/feed/find/${feed_id}`, {
         method: "GET",
         headers: {
@@ -283,20 +338,31 @@ function Feed({ navigation }) {
           })
             .then((response) => response.json())
             .then((member) => {
-              const comments = item.comments.map((comment) => {
+              const commentsPromise = item.comments.map((comment) => {
+                return fetch(`${URL}/member/info/${comment.memberId}`, {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${adminToken}`,
+                  },
+                })
+                  .then((response) => response.json())
+                  .then((commentMember) => {
+                    return {
+                      ...comment,
+                      name: commentMember.name,
+                      profile: commentMember.profile,
+                    };
+                  });
+              });
+
+              return Promise.all(commentsPromise).then((comments) => {
                 return {
-                  ...comment,
+                  ...item,
+                  comments,
                   name: member.name,
                   profile: member.profile,
                 };
               });
-
-              return {
-                ...item,
-                comments,
-                name: member.name,
-                profile: member.profile,
-              };
             });
         })
       )
@@ -752,6 +818,7 @@ function Feed({ navigation }) {
                 </GroupNameView>
                 <LocationMemberContainer>
                   <Text style={{ fontSize: 11 }}>
+                    <Entypo name="location" size={11} color="black" />{" "}
                     {groupInfo.location} ∙ 멤버 {groupMemNum}
                   </Text>
                 </LocationMemberContainer>
@@ -767,8 +834,8 @@ function Feed({ navigation }) {
                       name="ios-alarm-outline"
                       size={12}
                       color="black"
-                    />
-                    {groupInfo.alarmTime}
+                    />{" "}
+                    {groupInfo.alarmTime.slice(0, 5)}
                   </Text>
                 </DateView>
                 <DescriptionView>
@@ -811,9 +878,11 @@ function Feed({ navigation }) {
                 justifyContent: "center",
                 borderRadius: 10,
               }}
-              onPress={() => {
+
+              onPress={() =>{
                 JoinButton();
-                sendScheduledNotification();
+                sendScheduledNotification(groupInfo);
+
               }}
             >
               <Text style={{ fontSize: 25, fontWeight: "bold" }}>참여하기</Text>
