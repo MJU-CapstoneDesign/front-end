@@ -314,10 +314,6 @@ function Meeting({ token }) {
   const loading = partyInfoLoading;
   const refreshing = isRefetchingPartyInfo;
 
-  if (!partyInfoData) {
-    console.log("No data");
-  }
-
   return loading ? (
     <Loader />
   ) : (
@@ -339,12 +335,10 @@ function Meeting({ token }) {
         />
         <FlatList
           horizontal={false}
-          // data={selectedCategory ? partyInfoData.filter(item => item.groupType === selectedCategory) : partyInfoData}
           data={partyInfoData}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
-                //console.log(partyId);
                 setPartyId(item.partyId);
                 setPartyIdContext(item.partyId);
                 console.log(partyId);

@@ -42,7 +42,6 @@ export default function App() {
     getToken();
   }, []);
 
-
   useEffect(() => {
     console.log("category!!!!!!!");
     (async () => {
@@ -56,9 +55,7 @@ export default function App() {
         },
       ]);
     })();
-  
-  }, []);
-  
+
   // Subscribe to events
   useEffect(() => {
     return notifee.onForegroundEvent(({ type, detail }) => {
@@ -68,15 +65,13 @@ export default function App() {
           break;
         case EventType.PRESS:
           console.log("User pressed notification", detail.notification);
-            // messaging()
-            //   .unsubscribeFromTopic(detail.notification?.data?.partyId)
-            //   .then(() => console.log('Unsubscribed from topic!'));
           break;
       }
     });
   }, []);
 
   if (token !== null) {
+    console.log("App.js")
     return (
       <TokenProvider>
         <QueryClientProvider client={queryClient}>

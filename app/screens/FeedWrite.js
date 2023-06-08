@@ -91,6 +91,7 @@ function FeedWrite({ navigation }) {
           content: text,
           partyId: partyIdContext,
           img: imageUri,
+
         }),
       })
         .then((response) => {

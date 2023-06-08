@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components/native";
+import notifee, { TimestampTrigger, TriggerType } from "@notifee/react-native";
 import {
   FlatList,
   Text,
@@ -523,7 +524,44 @@ function Feed({ navigation }) {
         date.getMonth() + 1
       }월 ${date.getDate()}일 ${amOrPm} ${formattedHours}:${formattedMinutes}`;
     }
+  };
+  // 예약된 알림 보내기
+  const sendScheduledNotification = async () => {
+    // Request permissions (required for iOS)
+    await notifee.requestPermission();
 
+    const date = new Date(Date.now());
+    date.setHours(3);
+    date.setMinutes(17);
+
+    const trigger = {
+      type: TriggerType.TIMESTAMP,
+      timestamp: date.getTime(),
+    };
+    console.log(trigger);
+
+    await notifee.createTriggerNotification(
+      {
+        id: "message",
+        title: "name",
+        body: "introduce",
+        ios: {
+          categoryId: "new-episode",
+          sound: "ringtone.wav",
+          attachments: [], // Add any attachments here
+          targetContentId: "Alarm",
+        },
+        android: {
+          channelId: "general", // Android channel ID
+          smallIcon: "ic_stat_name", // Optional: Specify the small icon
+          actions: [
+            { pressAction: { id: "dismiss" }, title: "Dismiss" },
+            { pressAction: { id: "default" }, title: "See more" },
+          ],
+        },
+      },
+      trigger
+    );
     return (
       <>
         <FeedComponentContainer>
@@ -662,7 +700,9 @@ function Feed({ navigation }) {
       .then((res) => res.json())
       .then((res) => {
         setGroupInfo(res);
+        //setGroupMemNum(groupInfo?.members.length);
         setGroupMemNum(groupInfo?.members.length);
+        //console.log("Feed" + groupInfo?.members.length);
         const dateString = PartyComponent({
           startAt: res.startAt,
           endAt: res.endAt,
@@ -838,9 +878,11 @@ function Feed({ navigation }) {
                 justifyContent: "center",
                 borderRadius: 10,
               }}
+
               onPress={() =>{
                 JoinButton();
                 sendScheduledNotification(groupInfo);
+
               }}
             >
               <Text style={{ fontSize: 25, fontWeight: "bold" }}>참여하기</Text>

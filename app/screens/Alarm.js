@@ -3,6 +3,7 @@
 import React from 'react';
 import styled from 'styled-components/native';
 import { MaterialIcons } from '@expo/vector-icons';
+//import { useNavigation } from "@react-navigation/native";
 
 const Container = styled.View`
     flex: 1;
@@ -44,7 +45,7 @@ const AlarmOffContainer = styled.TouchableOpacity`
 	margin-bottom: -125px;
 `;
 
-export default function Alarm() {
+export default function Alarm({navigation}) {
 	let today = new Date();   
 
 	let year = today.getFullYear(); // 년도
