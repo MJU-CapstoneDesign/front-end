@@ -8,6 +8,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useQueryClient, useQuery } from "react-query";
 import Loader from "../../components/Loader";
 import { TokenContext } from "./TokenContext";
+import { useNavigation } from "@react-navigation/native";
 import {
   RefreshControl,
   ScrollView,
@@ -17,7 +18,7 @@ import {
 import { TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import moment from "moment";
-import 'moment/locale/ko';
+import "moment/locale/ko";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -133,7 +134,15 @@ const NoticeText = styled.Text`
   margin-top: 10px;
 `;
 
-export default function MyMeeting({ navigation }) {
+export default function MyMeeting() {
+  const navigation = useNavigation();
+
+  //partyId feed로 넘기기 / 참가여부 확인 context
+  const { partyIdContext, setPartyIdContext, joinCheck, setJoinCheck } =
+    useContext(TokenContext);
+
+  const [partyId, setPartyId] = useState(null);
+
   const { token } = useContext(TokenContext);
   console.log(token);
   const queryClient = useQueryClient();
@@ -167,7 +176,7 @@ export default function MyMeeting({ navigation }) {
 
     //시작일, 종료일 필터링
     const formattedDate = moment(item.startAt).format("MM/DD(dd)");
-    const formattedEndDate = moment(item.endDate).format("MM/DD(dd)");
+    const formattedEndDate = moment(item.endAt).format("MM/DD(dd)");
 
     return (
       <GContent>
@@ -182,7 +191,9 @@ export default function MyMeeting({ navigation }) {
             <GroupTitle>{item.groupName}</GroupTitle>
             <Row>
               <Icon name="calendar-range-outline" size={18} />
-              <DateText>{formattedDate} ~ {formattedEndDate}</DateText>
+              <DateText>
+                {formattedDate} ~ {formattedEndDate}
+              </DateText>
               <PBoard>
                 <WeekText>주 {count}일</WeekText>
               </PBoard>
@@ -223,7 +234,15 @@ export default function MyMeeting({ navigation }) {
             horizontal={false}
             data={partyMyInfoData}
             renderItem={({ item }) => (
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  //console.log(partyId);
+                  setPartyId(item.partyId);
+                  setPartyIdContext(item.partyId);
+                  console.log(partyId);
+                  navigation.navigate("FeedTabs");
+                }}
+              >
                 <RenderGroup item={item} />
               </TouchableOpacity>
             )}
