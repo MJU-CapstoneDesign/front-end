@@ -1,20 +1,118 @@
-import { StatusBar } from "expo-status-bar";
-import React from "react";
-import styled from "styled-components/native";
+import React, { useState, useEffect, useContext , useRef} from "react";
+import Root from "./navigation/Root";
+import { NavigationContainer ,NavigationContainerRef} from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import LogIn from "./screens/Home/Login";
+import { TokenProvider } from "./screens/Home/TokenContext";
+import { QueryClient, QueryClientProvider } from "react-query";
+import notifee, { EventType } from "@notifee/react-native";
 
-const Container = styled.View`
-  flex: 1;
-  background-color: #fff;
-  align-items: center;
-  justify-content: center;
-`;
 
-const MainText = styled.Text``;
+
+const queryClient = new QueryClient();
+import Loading from "./screens/Home/Loading";
+
 
 export default function App() {
-  return (
-    <Container>
-      <MainText>Open up App.js to start working on your app!</MainText>
-    </Container>
-  );
+  const navigationRef = useRef<NavigationContainerRef>(null);
+  const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+  }, []);
+
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        const value = await AsyncStorage.getItem("jwts");
+        if (value !== null) {
+          const data = JSON.parse(value);
+          setToken(data.accessToken);
+        } else {
+          console.log("저장된 JWT 토큰이 없습니다.");
+        }
+      } catch (error) {
+        console.log("JWT 토큰을 검색하는 동안 오류가 발생했습니다:", error);
+      }
+    };
+    getToken();
+  }, []);
+
+  // notifee.setNotificationCategories([
+  //   {
+  //     id: "message",
+  //     actions: [
+  //       {
+  //         id: "view-post",
+  //         title: "View post",
+  //         // Trigger the app to open in the foreground
+  //         foreground: true,
+  //       },
+  //     ],
+  //   },
+  // ]);
+  useEffect(() => {
+    console.log("category!!!!!!!");
+    (async () => {
+      await notifee.setNotificationCategories([
+        {
+          id: "new-episode",
+          actions: [
+            { id: "default", title: "Watch Now" },
+            { id: "bookmark", title: "Save For Later" },
+          ],
+        },
+      ]);
+    })();
+  
+    // return notifee.onForegroundEvent(async ({ type, detail }) => {
+    //   if (
+    //     type === EventType.ACTION_PRESS &&
+    //     detail.pressAction?.id === "bookmark"
+    //   ) {
+    //     setBookmarks([
+    //       ...bookmarks,
+    //       parseInt(detail.notification?.data?.showId),
+    //     ]);
+    //   } else if (
+    //     detail.pressAction?.id === "dismiss" &&
+    //     detail.notification?.id
+    //   ) {
+    //     await notifee.cancelNotification(detail.notification.id);
+    //   }
+    // });
+  }, []);
+  
+  // Subscribe to events
+  useEffect(() => {
+    return notifee.onForegroundEvent(({ type, detail }) => {
+      switch (type) {
+        case EventType.DISMISSED:
+          console.log("User dismissed notification", detail.notification);
+          break;
+        case EventType.PRESS:
+          console.log("User pressed notification", detail.notification);
+          break;
+      }
+    });
+  }, []);
+
+  if (token !== null) {
+    console.log("App.js")
+    return (
+      <TokenProvider>
+        <QueryClientProvider client={queryClient}>
+          <NavigationContainer>
+            {isLoading ? <Loading /> : <Root token={token} />}
+          </NavigationContainer>
+        </QueryClientProvider>
+      </TokenProvider>
+    );
+  } else {
+    return <LogIn />;
+  }
 }

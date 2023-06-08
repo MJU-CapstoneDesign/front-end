@@ -1,7 +1,15 @@
-#import <RCTAppDelegate.h>
+#import <UserNotifications/UNUserNotificationCenter.h>
 #import <UIKit/UIKit.h>
 #import <Expo/Expo.h>
 
-@interface AppDelegate : EXAppDelegateWrapper
+#import <UserNotifications/UNUserNotificationCenter.h>
+#import <RCTAppDelegate.h>
 
-@end
+//@interface AppDelegate : EXAppDelegateWrapper
+//@interface AppDelegate : RCTAppDelegate <UNUserNotificationCenterDelegate>
+//@end
+
+
+ @interface AppDelegate : EXAppDelegateWrapper <UNUserNotificationCenterDelegate>
+
+ @end

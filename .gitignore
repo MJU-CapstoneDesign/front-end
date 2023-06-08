@@ -272,9 +272,9 @@ google-services.json
 # Ignore the ios and android directories in React Native projects
 # ios/
 # android/
+app/ios/danram/GoogleService-Info.plist
 
-
-*.lock
+#*.lock
 
 
 ### VisualStudio ###
@@ -476,7 +476,7 @@ PublishScripts/
 # NuGet Symbol Packages
 *.snupkg
 # The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
+#**/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
@@ -676,3 +676,5 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudio,reactnative
+
+Api.js

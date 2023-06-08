@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "danram.danram"
+               BuildableName = "danram.app"
                BlueprintName = "danram"
                ReferencedContainer = "container:danram.xcodeproj">
             </BuildableReference>
@@ -55,11 +55,18 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "danram.danram"
+            BuildableName = "danram.app"
             BlueprintName = "danram"
             ReferencedContainer = "container:danram.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "OS_ACTIVITY_MODE"
+            value = "disable"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -72,7 +79,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "danram.danram"
+            BuildableName = "danram.app"
             BlueprintName = "danram"
             ReferencedContainer = "container:danram.xcodeproj">
          </BuildableReference>
