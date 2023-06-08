@@ -176,7 +176,7 @@ export default function MyMeeting() {
 
     //시작일, 종료일 필터링
     const formattedDate = moment(item.startAt).format("MM/DD(dd)");
-    const formattedEndDate = moment(item.endDate).format("MM/DD(dd)");
+    const formattedEndDate = moment(item.endAt).format("MM/DD(dd)");
 
     return (
       <GContent>

@@ -145,7 +145,7 @@ function AddNext({ navigation, route }) {
 
   useEffect(() => {
     subscribe(); // partyId가 변경될 때마다 subscribe 함수 호출
-    sendScheduledNotification(); // partyId가 변경될 때마다 예약 메시지 보내기
+    //sendScheduledNotification(); // partyId가 변경될 때마다 예약 메시지 보내기
   }, [partyId, subscribe]);
 
   //FCM topic
@@ -168,14 +168,14 @@ function AddNext({ navigation, route }) {
   const sendDataToServer = () => {
     const requestBody = {
       alarmFrequency: frequency.join(","),
-      alarmTime: `${hour}:${min}:00`,
+      alarmTime: `${hour}:${min}`,  //00처리
       description: introduce,
       endAt: `${endDateText}T21:12:12`,
       groupName: name,
       groupType: value,
       location: location,
       max: parseInt(num),
-      partyImg: imageUri,
+      partyImg: "1",
       startAt: `${dateText}T21:12:12`,
     };
 
@@ -195,6 +195,7 @@ function AddNext({ navigation, route }) {
           console.log(data.partyId);
           console.log(data.userId);
           setPartyId(data.partyId);
+          sendScheduledNotification();
         } else {
           console.log("파티 ID가 유효하지 않습니다.");
         }
@@ -202,7 +203,8 @@ function AddNext({ navigation, route }) {
       .catch((error) => {
         console.log("에러 발생: ", error);
       });
-    navigation.navigate("HomeFeedStack", { screen: "Home" });
+    //navigation.navigate("HomeFeedStack", { screen: "Home" });
+    navigation.reset({routes: [{name: "HomeFeedStack"}]})
   };
   
   // 예약된 알림 보내기
@@ -232,6 +234,9 @@ function AddNext({ navigation, route }) {
         id: "partyId",
         title: name,
         body: "약속한 시간이에요",
+        data:{
+          //partyId:`${partyId}`,
+        },
         ios: {
           categoryId: "new-episode",
           sound:'ringtone.wav',

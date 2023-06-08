@@ -157,9 +157,9 @@ export const calStyles = StyleSheet.create({
         flex: 1,
         borderRadius: 5,
         padding: 10,
-        marginRight: 10,
-        marginTop: 17,
-        width: '80%'
+        //marginRight: 10,
+       //marginTop: 5,
+        width: '90%'
     },
 
     button: {
@@ -175,6 +175,8 @@ export const calStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         borderRadius: 10,
+        borderRightColor:'gray',
+        borderBottomColor:'gray',
         borderBottomWidth: 1,
         borderRightWidth: 0.5,
         padding: 10,

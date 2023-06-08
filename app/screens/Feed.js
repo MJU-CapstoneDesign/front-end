@@ -23,6 +23,7 @@ import { adminToken } from "../api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { Entypo } from "@expo/vector-icons";
+import notifee, { TimestampTrigger, TriggerType } from "@notifee/react-native";
 
 // 화면 전체를 채우는 컨테이너 (사용할지 안할지 정해지지않음)
 const Container = styled.View`
@@ -223,6 +224,56 @@ const CommentProfilePhoto = styled.View`
 
 // 피드 컴포넌트
 function Feed({ navigation }) {
+  // 예약된 알림 보내기
+  const sendScheduledNotification = async (groupInfo) => {
+    // Request permissions (required for iOS)
+    await notifee.requestPermission();
+
+    const timeString = groupInfo.alarmTime;
+    const timeParts = timeString.split(":"); // 구분자 ":"를 기준으로 문자열을 분할하여 배열로 반환
+    const hour = timeParts[0]; // 배열의 첫 번째 요소는 시간
+    const minute = timeParts[1]; // 배열의 두 번째 요소는 분
+    console.log("시간" + hour);
+    console.log("시간" + minute);
+    const date = new Date(Date.now());
+    date.setHours(hour);
+    date.setMinutes(minute);
+
+
+    const trigger = {
+      type: TriggerType.TIMESTAMP,
+      timestamp: date.getTime(), 
+    };
+    console.log(trigger);
+    
+    await notifee.createTriggerNotification(
+      {
+        id: "partyId",
+        title: groupInfo.groupName,
+        body: "약속한 시간이에요",
+        ios: {
+          categoryId: "new-episode",
+          sound:'ringtone.wav',
+          attachments: [], // Add any attachments here
+          targetContentId:'Alarm',
+        },
+        android: {
+          channelId: "custom-sound", // Android channel ID
+          //sound:"alarm",
+          smallIcon: "ic_stat_name", // Optional: Specify the small icon
+          actions: [
+            { pressAction: { id: "dismiss" }, title: "Dismiss" },
+            { pressAction: { id: "default" }, title: "See more" },
+          ],
+          
+        },
+      },
+      trigger
+    );
+
+    
+  };
+
   // 토큰 저장할 것
   const { token, partyIdContext, joinCheck, setJoinCheck } =
     useContext(TokenContext);
@@ -260,7 +311,6 @@ function Feed({ navigation }) {
   const fetchFeed = async () => {
     try {
       setIsLoading(true); // isLoading 값을 true로 설정
-
       const response = await fetch(`${URL}/feed/find/${feed_id}`, {
         method: "GET",
         headers: {
@@ -744,8 +794,8 @@ function Feed({ navigation }) {
                       name="ios-alarm-outline"
                       size={12}
                       color="black"
-                    />
-                    {groupInfo.alarmTime}
+                    />{" "}
+                    {groupInfo.alarmTime.slice(0, 5)}
                   </Text>
                 </DateView>
                 <DescriptionView>
@@ -788,7 +838,10 @@ function Feed({ navigation }) {
                 justifyContent: "center",
                 borderRadius: 10,
               }}
-              onPress={JoinButton}
+              onPress={() =>{
+                JoinButton();
+                sendScheduledNotification(groupInfo);
+              }}
             >
               <Text style={{ fontSize: 25, fontWeight: "bold" }}>참여하기</Text>
             </TouchableOpacity>
